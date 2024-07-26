@@ -54,8 +54,12 @@ await setPersistence(auth, inMemoryPersistence)
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
 document.getElementById('login').addEventListener('click', async () => {
+    try {
 const result = await signInWithPopup(auth, provider);
 console.log('Logged in as:', result.user.email)
+} catch (e) {
+    window.document.innerHTML = e
+    }
 })
 
 </script>
