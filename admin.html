@@ -50,6 +50,9 @@ form.onsubmit = async e => {
 }
 
 const auth = getAuth();
+window.auth = auth
+window.firestore= firestore
+window.db = db
 await setPersistence(auth, inMemoryPersistence)
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
