@@ -38,9 +38,9 @@ form.onsubmit = async e => {
     try {
         const ref = firestore.collection(db, "events")
         await firestore.addDoc(ref, {
-            name: form.elements["name"],
-            teachers: form.elements["teachers"],
-            capacity: form.elements["capacity"],
+            name: form.elements["name"].value,
+            teachers: form.elements["teachers"].value,
+            capacity: form.elements["capacity"].value,
             participants: []
         })
         alert("done")
