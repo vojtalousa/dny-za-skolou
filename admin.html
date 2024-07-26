@@ -1,0 +1,51 @@
+<button id="login">login</button>
+<form id="new-event">
+<label for="name">Název akce</label>
+<input type="text" id="name" name="name" required>
+<label for="teachers">Učitelé na akci</label>
+<input type="text" id="teachers" name="teachers" required>
+<label for="capacity">Kapacita</label>
+<input type="number" id="capacity" name="capacity" required>
+    <button type="submit">Přidat akci</button>
+</form>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+import * as firestore from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js"
+import {
+    getAuth,
+    signInWithPopup,
+    GoogleAuthProvider,
+    setPersistence,
+    inMemoryPersistence
+} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js"
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCEmK763aMbHq1WSWEyjehsUR5FQ5hmEpQ",
+    authDomain: "dny-za-skolou-8c8a0.firebaseapp.com",
+    projectId: "dny-za-skolou-8c8a0",
+    storageBucket: "dny-za-skolou-8c8a0.appspot.com",
+    messagingSenderId: "876624624466",
+    appId: "1:876624624466:web:369dc5619d2089b396188b",
+    measurementId: "G-S62KH47PLK"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = firestore.getFirestore(app);
+
+const form = document.getElementById("new-event")
+form.onsubmit = async e => {
+    e.preventDefault()
+    try {
+        const ref = firestore.collection(db, "events")
+        await firestore.addDoc(ref, {
+            name: form.elements["name"],
+            teachers: form.elements["teachers"],
+            capacity: form.elements["capacity"],
+            participants: []
+        })
+        alert("done")
+    } catch (e) {
+        alert(e)
+    }
+}
+</script>
