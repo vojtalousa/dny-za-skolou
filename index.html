@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Dny za školou - Přihlašování</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+</head>
+<body>
+<div id="login-section" class="section">
+    <h1>Přihlaste se školním účtem</h1>
+    <button id="login">Přihlásit se</button>
+</div>
+<div id="waiting-section" class="section">
+    <span id="waiting-loader" class="loader"></span>
+    <h1 id="countdown">--:--:--</h1>
+    <p class="waiting-description">Stránku nemusíte obnovovat, formulář se sám zobrazí hned jakmile bude dostupný.</p>
+</div>
+<div id="form-section" class="section">
+    <span id="form-loader" class="loader"></span>
+    <form id="signup-form">
+        <fieldset id="form-fieldset"></fieldset>
+        <button id="signup-form-button" type="submit">Zapsat se</button>
+    </form>
+</div>
+<div id="error">Neznámá chyba!</div>
+
+<script type="module" src="script.js"></script>
+</body>
+</html>

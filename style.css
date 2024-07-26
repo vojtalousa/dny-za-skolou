@@ -1,0 +1,231 @@
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100dvh;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: flex;
+    padding: 15px;
+    justify-content: stretch;
+    align-items: stretch;
+    font-family: "Inter", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: bold;
+    font-style: normal;
+    font-variation-settings: "slnt" 0;
+    color: #1C1C1C;
+    background-color: white;
+}
+
+h1 {
+    font-size: 30px;
+    font-weight: 700;
+    margin: 0 0 20px;
+}
+
+p {
+    margin: 0;
+    font-size: 20px;
+    color: #454545;
+    font-weight: 600;
+    text-align: center;
+}
+
+button {
+    all: unset;
+    padding: 13px 27px;
+    background-color: #3E7BF2;
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+button:hover {
+    background-color: #3771e1;
+}
+
+button:disabled {
+    background-color: #D9D9D9;
+    color: #454545;
+    cursor: not-allowed;
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+    min-height: calc(100dvh - 30px);
+    height: fit-content;
+    padding: 50px 15%;
+    background-color: #FAFAFA;
+    border-radius: 10px;
+    border: 2px solid #EFEFEF;
+}
+
+#signup-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    min-height: 0;
+}
+
+#form-fieldset {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fit, 375px);
+    width: 100%;
+    justify-content: center;
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+/*#login-section {*/
+/*    display: none;*/
+/*}*/
+
+#waiting-section {
+    display: none;
+}
+
+#countdown {
+    display: none;
+    font-size: 85px;
+    margin-bottom: 5px;
+}
+
+.waiting-description {
+    max-width: 650px
+}
+
+#form-section {
+    display: none;
+}
+
+.event-parent {
+    display: flex;
+    gap: 12px;
+}
+
+input[type=radio] {
+    all: unset;
+    cursor: pointer;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    outline: none;
+    border: 2px solid #D9D9D9;
+    margin: 2px 0 0;
+}
+
+input[type=radio]:disabled {
+    border-color: #D9D9D9;
+    background-color: #D9D9D9;
+    cursor: not-allowed;
+}
+
+input[type=radio]:checked {
+    border-color: #3E7BF2;
+    background-color: white; !important;
+}
+
+
+input[type=radio]:checked::before {
+    content: '';
+    display: block;
+    width: 12px;
+    height: 12px;
+    margin: calc((16px - 12px) / 2);
+    background-color: #3E7BF2;
+    border-radius: 50%;
+}
+
+label {
+    cursor: pointer;
+    white-space: nowrap;
+}
+input:disabled+label {
+    cursor: not-allowed;
+}
+
+.stop-overflow {
+    max-width: 265px;
+    text-overflow: ellipsis;
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: sub;
+}
+
+.event-name {
+    font-size: 19px;
+    font-weight: 700;
+    color: #1C1C1C;
+}
+
+.event-availability {
+    display: inline-block;
+    padding: 5px 8px;
+    background-color: #80D463;
+    color: white;
+    border-radius: 5px;
+    font-size: 14px;
+    margin-left: 10px;
+    position: relative;
+    top: -1px;
+}
+
+.event-teachers {
+    font-size: 17px;
+    font-weight: 600;
+    color: #454545;
+}
+
+.loader {
+    margin-bottom: 30px;
+    width: 40px;
+    height: 40px;
+    border: 4px solid #1C1C1C;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: rotation 1s linear infinite;
+}
+@keyframes rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+#error {
+    position: fixed;
+    bottom: -60px;
+    font-weight: 600;
+    font-size: 18px;
+    padding: 12px 18px;
+    background-color: #E75858;
+    color: white;
+    border-radius: 9px;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.visible {
+    transform: translateX(-50%) translateY(-90px) !important;
+}
