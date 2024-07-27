@@ -40,100 +40,10 @@ const app = initializeApp(firebaseConfig);
 const db = firestore.getFirestore(app);
 const signupStartPromise = firestore.getDoc(firestore.doc(db, 'settings', 'public')).then(doc => doc.data().start_time.toDate())
 
-const query = firestore.query(firestore.collection(db, 'events'));
-const form = document.getElementById('signup-form')
-let firstUpdate = true
-firestore.onSnapshot(query, (snapshot) => {
-    if (firstUpdate) {
-        document.getElementById('form-loader').style.display = 'none'
-        firstUpdate = false
-    }
-    const setLabelValue = (label, radio, doc) => {
-        const occupied = doc.data().participants.length
-        const capacity = doc.data().capacity
-        const teachers = doc.data().teachers
-        const availability = `${occupied}/${capacity}`
-        const availabilityColor = `hsl(${126 - Math.round(126 * (occupied / capacity))}, 57%, 61%)`
-        label.querySelector('.event-name').textContent = doc.data().name
-        label.querySelector('.event-availability').textContent = availability
-        label.querySelector('.event-availability').style.backgroundColor = availabilityColor
-        label.querySelector('.event-teachers').textContent = teachers
-        radio.disabled = occupied >= capacity
-    }
-    snapshot.docChanges().forEach((change) => {
-        if (change.type === 'added') {
-            const radio = document.createElement('input')
-            radio.type = 'radio'
-            radio.name = 'event'
-            radio.value = change.doc.id
-            radio.id = `radio-${change.doc.id}`
-            radio.required = false
-
-            const label = document.createElement('label')
-            label.htmlFor = `radio-${change.doc.id}`
-            label.id = `label-${change.doc.id}`
-            const nameSpan = document.createElement('span')
-            nameSpan.className = 'event-name stop-overflow'
-            const availabilitySpan = document.createElement('span')
-            availabilitySpan.className = 'event-availability'
-            const teachersSpan = document.createElement('span')
-            teachersSpan.className = 'event-teachers stop-overflow'
-            label.append(nameSpan, availabilitySpan, document.createElement('br'), teachersSpan)
-            setLabelValue(label, radio, change.doc)
-
-            const div = document.createElement('div')
-            div.id = `event-${change.doc.id}`
-            div.className = 'event-parent'
-            div.append(radio, label)
-
-            document.getElementById('form-fieldset').append(div)
-            console.log('Added event: ', change.doc.data());
-        }
-        if (change.type === 'modified') {
-            const label = document.getElementById(`label-${change.doc.id}`)
-            const radio = document.getElementById(`radio-${change.doc.id}`)
-            setLabelValue(label, radio, change.doc)
-            console.log('Modified event: ', change.doc.data());
-        }
-        if (change.type === 'removed') {
-            document.getElementById(`event-${change.doc.id}`).remove()
-            console.log('Removed event: ', change.doc.data());
-        }
-    });
-});
-
 const disableOthers = (id) => {
     document.getElementById(`radio-${id}`).checked = true
     document.getElementById('form-fieldset').disabled = true
     document.getElementById('signup-form-button').disabled = true
-}
-
-const signup = async (email, event_id) => {
-    const batch = firestore.writeBatch(db);
-    const userRef = firestore.doc(db, 'users', email)
-    const eventRef = firestore.doc(db, 'events', event_id)
-
-    batch.set(userRef, { email, event_id })
-    batch.update(eventRef, { participants: firestore.arrayUnion(email) })
-    await batch.commit();
-}
-form.onsubmit = async (e) => {
-    e.preventDefault()
-    const event_id = form.elements.event.value
-    const event_name = document.querySelector(`#label-${event_id} > .event-name`).textContent
-    const email = auth.currentUser?.email
-    if (!email) return displayMessage('Nejste přihlášení!')
-    if (!event_id) return displayMessage('Není vybraná žádná akce!')
-
-    console.log('Signing up:', email, event_id)
-    try {
-        await signup(email, event_id)
-        displayMessage(`Zapsáno na "${event_name}"!`, '#43BC50', true)
-        disableOthers(event_id)
-    } catch (e) {
-        console.error('Error signing up:', e)
-        displayMessage('Vybraná akce už není dostupná, nebo jste už zapsaní!')
-    }
 }
 
 const startCountdown = (signupStart) => {
@@ -207,6 +117,96 @@ document.getElementById('login').addEventListener('click', async () => {
 document.getElementById("login-loader").style.display = "none"
 document.getElementById("button-text").style.display = "inline"
 
+const query = firestore.query(firestore.collection(db, 'events'));
+let firstUpdate = true
+firestore.onSnapshot(query, (snapshot) => {
+    if (firstUpdate) {
+        document.getElementById('form-loader').style.display = 'none'
+        firstUpdate = false
+    }
+    const setLabelValue = (label, radio, doc) => {
+        const occupied = doc.data().participants.length
+        const capacity = doc.data().capacity
+        const teachers = doc.data().teachers
+        const availability = `${occupied}/${capacity}`
+        const availabilityColor = `hsl(${126 - Math.round(126 * (occupied / capacity))}, 57%, 61%)`
+        label.querySelector('.event-name').textContent = doc.data().name
+        label.querySelector('.event-availability').textContent = availability
+        label.querySelector('.event-availability').style.backgroundColor = availabilityColor
+        label.querySelector('.event-teachers').textContent = teachers
+        radio.disabled = occupied >= capacity
+    }
+    snapshot.docChanges().forEach((change) => {
+        if (change.type === 'added') {
+            const radio = document.createElement('input')
+            radio.type = 'radio'
+            radio.name = 'event'
+            radio.value = change.doc.id
+            radio.id = `radio-${change.doc.id}`
+            radio.required = false
+
+            const label = document.createElement('label')
+            label.htmlFor = `radio-${change.doc.id}`
+            label.id = `label-${change.doc.id}`
+            const nameSpan = document.createElement('span')
+            nameSpan.className = 'event-name stop-overflow'
+            const availabilitySpan = document.createElement('span')
+            availabilitySpan.className = 'event-availability'
+            const teachersSpan = document.createElement('span')
+            teachersSpan.className = 'event-teachers stop-overflow'
+            label.append(nameSpan, availabilitySpan, document.createElement('br'), teachersSpan)
+            setLabelValue(label, radio, change.doc)
+
+            const div = document.createElement('div')
+            div.id = `event-${change.doc.id}`
+            div.className = 'event-parent'
+            div.append(radio, label)
+
+            document.getElementById('form-fieldset').append(div)
+            console.log('Added event: ', change.doc.data());
+        }
+        if (change.type === 'modified') {
+            const label = document.getElementById(`label-${change.doc.id}`)
+            const radio = document.getElementById(`radio-${change.doc.id}`)
+            setLabelValue(label, radio, change.doc)
+            console.log('Modified event: ', change.doc.data());
+        }
+        if (change.type === 'removed') {
+            document.getElementById(`event-${change.doc.id}`).remove()
+            console.log('Removed event: ', change.doc.data());
+        }
+    });
+});
+
+const signup = async (email, event_id) => {
+    const batch = firestore.writeBatch(db);
+    const userRef = firestore.doc(db, 'users', email)
+    const eventRef = firestore.doc(db, 'events', event_id)
+
+    batch.set(userRef, { email, event_id })
+    batch.update(eventRef, { participants: firestore.arrayUnion(email) })
+    await batch.commit();
+}
+
+const form = document.getElementById('signup-form')
+form.onsubmit = async (e) => {
+    e.preventDefault()
+    const event_id = form.elements.event.value
+    const event_name = document.querySelector(`#label-${event_id} > .event-name`).textContent
+    const email = auth.currentUser?.email
+    if (!email) return displayMessage('Nejste přihlášení!')
+    if (!event_id) return displayMessage('Není vybraná žádná akce!')
+
+    console.log('Signing up:', email, event_id)
+    try {
+        await signup(email, event_id)
+        displayMessage(`Zapsáno na "${event_name}"!`, '#43BC50', true)
+        disableOthers(event_id)
+    } catch (e) {
+        console.error('Error signing up:', e)
+        displayMessage('Vybraná akce už není dostupná, nebo jste už zapsaní!')
+    }
+}
 
 // window.auth = auth
 // window.app = app
