@@ -88,6 +88,7 @@ form3.onsubmit = async e => {
             const eventId = userDoc.data().event_id;
             const eventRef = firestore.doc(db, "events", eventId)
             transaction.update(eventRef, { participants: firestore.arrayRemove(email) });
+            transaction.delete(userRef)
         });
         alert(`Removed user ${email}`)
     } catch (e) {
