@@ -6,7 +6,12 @@
 <input type="text" id="teachers" name="teachers" required>
 <label for="capacity">Kapacita</label>
 <input type="number" id="capacity" name="capacity" required>
-    <button type="submit">Přidat akci</button>
+<button type="submit">Přidat akci</button>
+</form>
+<form id="set-time">
+<label for="time">Čas začátku přihlašování</label>
+<input id="time" name="time" type="datetime-local" required>
+<button type="submit">Nastavit čas</button>
 </form>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
@@ -49,6 +54,20 @@ form.onsubmit = async e => {
     }
 }
 
+const form2 = document.getElementById("set-time")
+form2.onsubmit = async e => {
+    e.preventDefault()
+    try {
+        const ref = firestore.document(db, "settings", "public")
+        await firestore.setDoc(ref, {
+            start_time: new Date(form2.elements["time"].value)
+        })
+        alert("done")
+    } catch (e) {
+        alert(e)
+    }
+}
+
 const auth = getAuth();
 window.auth = auth
 window.firestore= firestore
@@ -59,10 +78,13 @@ provider.setCustomParameters({ prompt: 'select_account' });
 document.getElementById('login').addEventListener('click', async () => {
     try {
 const result = await signInWithPopup(auth, provider);
-console.log('Logged in as:', result.user.email)
+alert(`Logged in as: ${result.user.email}`)
 } catch (e) {
     window.document.innerHTML = e
     }
 })
+
+const startTime = await firestore.getDoc(firestore.document(db, "settings", "public"))
+document.innerHtml += startTime.data().start_time
 
 </script>
