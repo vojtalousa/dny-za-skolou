@@ -58,7 +58,7 @@ button:disabled {
     cursor: not-allowed;
 }
 
-.button-loader {
+button .loader {
     display: none;
     margin-bottom: -5px;
     width: 23px;
