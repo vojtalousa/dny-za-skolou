@@ -60,7 +60,7 @@ button:disabled {
 
 #login-loader {
     display: none;
-    margin-bottom: -10px;
+    margin-bottom: -5px;
     width: 25px;
     height: 25px;
     border-color: white;
