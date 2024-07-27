@@ -25,8 +25,8 @@ const displayMessage = (message, color = '#E75858', persistent = false) => {
     error.style.backgroundColor = color
     error.textContent = message
     const offset = error.getBoundingClientRect().height + 40
-    error.style = `transform: translateX(-50%) translateY(-${offset}px)`
-    if (!persistent) errorTimeout = setTimeout(() => error.style = "transform: translateX(-50%)", 3000)
+    error.style.transform = `translateX(-50%) translateY(-${offset}px)`
+    if (!persistent) errorTimeout = setTimeout(() => error.style = "translateX(-50%)", 3000)
 }
 
 const app = initializeApp(firebaseConfig);
