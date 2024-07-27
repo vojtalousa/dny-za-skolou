@@ -29,7 +29,7 @@ const displayMessage = (message, color = '#E75858', persistent = false) => {
     error.style.transform = `translateX(-50%) translateY(-${offset}px)`
     if (!persistent) errorTimeout = setTimeout(() => {
         error.style.transform = "translateX(-50%)"
-        setTimeout(() => error.style.display = "none", 500)
+        setTimeout(() => error.style.display = "none", 300)
     }, 3000)
 }
 
