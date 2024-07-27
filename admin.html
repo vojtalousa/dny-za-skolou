@@ -58,7 +58,7 @@ const form2 = document.getElementById("set-time")
 form2.onsubmit = async e => {
     e.preventDefault()
     try {
-        const ref = firestore.document(db, "settings", "public")
+        const ref = firestore.doc(db, "settings", "public")
         await firestore.setDoc(ref, {
             start_time: new Date(form2.elements["time"].value)
         })
