@@ -46,7 +46,7 @@ button {
     cursor: pointer;
     font-size: 20px;
     font-weight: 600;
-    transition: background-color 0.2s, width 0.3s, height 0.3s;
+    transition: all 0.2s;
 }
 button:hover {
     background-color: #3771e1;
@@ -60,7 +60,7 @@ button:disabled {
 
 #login-loader {
     display: none;
-    margin-bottom: 0;
+    margin-bottom: -10px;
     width: 25px;
     height: 25px;
     border-color: white;
