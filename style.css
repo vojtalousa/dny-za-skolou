@@ -58,6 +58,13 @@ button:disabled {
     cursor: not-allowed;
 }
 
+#login-loader {
+    margin-bottom: 0;
+    width: 20px;
+    height: 20px;
+    border-color: white;
+}
+
 .section {
     display: flex;
     flex-direction: column;
