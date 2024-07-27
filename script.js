@@ -18,6 +18,9 @@ const firebaseConfig = {
     measurementId: "G-S62KH47PLK"
 };
 
+document.getElementById("login-loader").style.display = "inline-block"
+document.getElementById("button-text").style.display = "none"
+    
 const error = document.getElementById('error')
 let errorTimeout
 const displayMessage = (message, color = '#E75858', persistent = false) => {
@@ -201,6 +204,9 @@ document.getElementById('login').addEventListener('click', async () => {
         }
     }
 })
+document.getElementById("login-loader").style.display = "none"
+document.getElementById("button-text").style.display = "inline"
+
 
 // window.auth = auth
 // window.app = app
