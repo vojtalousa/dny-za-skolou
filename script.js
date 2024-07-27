@@ -162,7 +162,6 @@ const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
 document.getElementById('login').addEventListener('click', async () => {
     const result = await signInWithPopup(auth, provider);
-    displayMessage("Úspěšně přihlášeno.", "#3E7BF2")
     console.log('Logged in as:', result.user.email)
 
     if (!/.+@dgkralupy\.(cz|eu)/.test(result.user.email)) {
