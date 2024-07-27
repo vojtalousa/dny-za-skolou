@@ -18,8 +18,8 @@ const firebaseConfig = {
     measurementId: "G-S62KH47PLK"
 };
 
-document.getElementById("login-loader").style.display = "inline-block"
-document.getElementById("button-text").style.display = "none"
+document.getElementById("login-button-loader").style.display = "inline-block"
+document.getElementById("login-button-text").style.display = "none"
     
 const error = document.getElementById('error')
 let errorTimeout
@@ -79,12 +79,12 @@ await setPersistence(auth, inMemoryPersistence)
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
 document.getElementById('login').addEventListener('click', async () => {
-    document.getElementById("login-loader").style.display = "inline-block"
-    document.getElementById("button-text").style.display = "none"
+    document.getElementById("login-button-loader").style.display = "inline-block"
+    document.getElementById("login-button-text").style.display = "none"
     const result = await signInWithPopup(auth, provider);
     console.log('Logged in as:', result.user.email)
-    document.getElementById("login-loader").style.display = "none"
-    document.getElementById("button-text").style.display = "inline"
+    document.getElementById("login-button-loader").style.display = "none"
+    document.getElementById("login-button-text").style.display = "inline"
 
     if (!/.+@dgkralupy\.(cz|eu)/.test(result.user.email)) {
         await auth.signOut()
@@ -114,8 +114,8 @@ document.getElementById('login').addEventListener('click', async () => {
         }
     }
 })
-document.getElementById("login-loader").style.display = "none"
-document.getElementById("button-text").style.display = "inline"
+document.getElementById("login-button-loader").style.display = "none"
+document.getElementById("login-button-text").style.display = "inline"
 
 const query = firestore.query(firestore.collection(db, 'events'));
 let firstUpdate = true
@@ -199,7 +199,12 @@ form.onsubmit = async (e) => {
 
     console.log('Signing up:', email, event_id)
     try {
+        document.getElementById("form-button-loader").style.display = "inline-block"
+        document.getElementById("form-button-text").style.display = "none"
         await signup(email, event_id)
+        document.getElementById("form-button-loader").style.display = "none"
+        document.getElementById("form-button-text").style.display = "inline"
+        
         displayMessage(`Zapsáno na "${event_name}"!`, '#43BC50', true)
         disableOthers(event_id)
     } catch (e) {
