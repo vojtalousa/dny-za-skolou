@@ -215,6 +215,7 @@ input:disabled+label {
 
 #error {
     position: fixed;
+    display: none;
     top: calc(100dvh + 10px);
     font-weight: 600;
     font-size: 18px;
