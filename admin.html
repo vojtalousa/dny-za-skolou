@@ -13,6 +13,11 @@
 <input id="time" name="time" type="datetime-local" required>
 <button type="submit">Nastavit čas</button>
 </form>
+<form id="remove-participant">
+<label for="time">Email účastníka</label>
+<input id="email" name="email" type="email" required>
+<button type="submit">Odebrat účastníka z akce</button>
+</form>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
 import * as firestore from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js"
@@ -63,6 +68,28 @@ form2.onsubmit = async e => {
             start_time: new Date(form2.elements["time"].value)
         })
         alert("done")
+    } catch (e) {
+        alert(e)
+    }
+}
+
+const form3 = document.getElementById("remove-participant")
+form3.onsubmit = async e => {
+    e.preventDefault()
+    try {
+        const email = form3.elements["email"].value
+        await firestore.runTransaction(db, async (transaction) => {
+            const userRef = firestore.doc(db, "users", email)
+            const userDoc = await transaction.get(userRef);
+            if (!userDoc.exists()) {
+              throw "User does not exist!";
+            }
+
+            const eventId = userDoc.data().event_id;
+            const eventRef = firestore.doc(db, "events", eventId)
+            transaction.update(eventRef, { participants: firestore.arrayRemove(email) });
+        });
+        alert(`Removed user ${email}`)
     } catch (e) {
         alert(e)
     }
