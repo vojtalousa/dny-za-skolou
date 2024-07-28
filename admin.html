@@ -1,13 +1,4 @@
 <button id="login">login</button>
-<form id="new-event">
-<label for="name">Název akce</label>
-<input type="text" id="name" name="name" required>
-<label for="teachers">Učitelé na akci</label>
-<input type="text" id="teachers" name="teachers" required>
-<label for="capacity">Kapacita</label>
-<input type="number" id="capacity" name="capacity" required>
-<button type="submit">Přidat akci</button>
-</form>
 <form id="set-time">
 <label for="time">Čas začátku přihlašování</label>
 <input id="time" name="time" type="datetime-local" required>
@@ -19,6 +10,15 @@
 <button type="submit">Odebrat účastníka z akce</button>
 </form>
 <div id="events"></div>
+<form id="new-event">
+<label for="name">Název akce</label>
+<input type="text" id="name" name="name" required>
+<label for="teachers">Učitelé na akci</label>
+<input type="text" id="teachers" name="teachers" required>
+<label for="capacity">Kapacita</label>
+<input type="number" id="capacity" name="capacity" required>
+<button type="submit">Přidat akci</button>
+</form>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
 import * as firestore from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js"
@@ -123,7 +123,8 @@ firestore.onSnapshot(query, (snapshot) => {
         if (change.type === 'added') {
             const description = document.createElement('p')
             description.id = `description-${change.doc.id}`
-            description.innerText = `${change.doc.data().name} (${change.doc.data().teachers}), max. ${change.doc.data().capacity}`
+            const {name, teachers, capacity, participants} = change.doc.data()
+            description.innerText = `${name} (${teachers}) - ${participants.length}/${capacity}`
 
             const button = document.createElement('button')
             button.id = `button-${change.doc.id}`
@@ -139,7 +140,8 @@ firestore.onSnapshot(query, (snapshot) => {
         }
         if (change.type === 'modified') {
             const label = document.getElementById(`description-${change.doc.id}`)
-            label.innerText = `${change.doc.data().name} (${change.doc.data().teachers})`
+            const {name, teachers, capacity, participants} = change.doc.data()
+            label.innerText = `${name} (${teachers}) - ${participants.length}/${capacity}`
             console.log('Modified event: ', change.doc.data());
         }
         if (change.type === 'removed') {
