@@ -118,10 +118,7 @@ const removeEvent = async (id) => {
 }
 const query = firestore.query(firestore.collection(db, 'events'));
 firestore.onSnapshot(query, (snapshot) => {
-    alert("huh")
-    alert(JSON.stringify(snapshot.docChanges()))
     snapshot.docChanges().forEach((change) => {
-        alert(change.type)
         try {
         if (change.type === 'added') {
             const description = document.createElement('p')
@@ -131,7 +128,7 @@ firestore.onSnapshot(query, (snapshot) => {
             const button = document.createElement('button')
             button.id = `button-${change.doc.id}`
             button.innerText = "Odebrat"
-            button.onclick = removeEvent(change.doc.id)
+            button.onclick = () => removeEvent(change.doc.id)
             
             const div = document.createElement('div')
             div.id = `event-${change.doc.id}`
