@@ -41,9 +41,9 @@ const db = firestore.getFirestore(app);
 const signupStartPromise = firestore.getDoc(firestore.doc(db, 'settings', 'public')).then(doc => doc.data().start_time.toDate())
 
 const disableOthers = (id) => {
-    document.getElementById(`radio-${id}`).checked = true
     document.getElementById('form-fieldset').disabled = true
     document.getElementById('signup-form-button').disabled = true
+    document.getElementById(`radio-${id}`).checked = true
 }
 
 const startCountdown = (signupStart) => {
