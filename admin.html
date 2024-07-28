@@ -117,12 +117,12 @@ alert("hmm")
 const removeEvent = async (id) => {
     await firestore.deleteDoc(firestore.doc(db, "events", id))
 }
-const changeEventAttribute = async (doc, attribute) => {
+const changeEventAttribute = async (doc, attribute, number = false) => {
     try {
         const eventRef = firestore.doc(db, "events", doc.id)
         const newValue = prompt(`Nová hodnota pole "${attribute}":`, doc.data()[attribute])
         if (!newValue) return
-        await firestore.updateDoc(eventRef, { [attribute]: newValue })
+        await firestore.updateDoc(eventRef, { [attribute]: number ? parseInt(newValue) : newValue })
     } catch (e) {
         alert(e)
     }
@@ -149,7 +149,7 @@ firestore.onSnapshot(query, (snapshot) => {
             button3.onclick = async () => await changeEventAttribute(change.doc, "teachers")
             const button4 = document.createElement('button')
             button4.innerText = "Upravit kapacitu"
-            button4.onclick = async () => await changeEventAttribute(change.doc, "capacity")
+            button4.onclick = async () => await changeEventAttribute(change.doc, "capacity", true)
             
             const div = document.createElement('div')
             div.id = `event-${change.doc.id}`
