@@ -126,10 +126,31 @@ firestore.onSnapshot(query, (snapshot) => {
             const {name, teachers, capacity, participants} = change.doc.data()
             description.innerText = `${name} (${teachers}) - ${participants.length}/${capacity}`
 
+            const eventRef = firestore.doc(db, "events", change.doc.id)
             const button = document.createElement('button')
-            button.id = `button-${change.doc.id}`
             button.innerText = "Odebrat"
             button.onclick = () => removeEvent(change.doc.id)
+            const button2 = document.createElement('button')
+            button2.innerText = "Upravit jméno"
+            button2.onclick = () => {
+                const newName = prompt("Nové jméno akce:", name)
+                if (!newName) return
+                await firestore.updateDoc(eventRef, { name: newName })
+            }
+            const button3 = document.createElement('button')
+            button3.innerText = "Upravit učitele"
+            button3.onclick = () => {
+                const newTeachers = prompt("Noví učitelé akce:", teachers)
+                if (!newTeachers) return
+                await firestore.updateDoc(eventRef, { teachers: newTeachers })
+            }
+            const button4 = document.createElement('button')
+            button4.innerText = "Upravit kapacitu"
+            button4.onclick = () => {
+                const newCapacity = prompt("Nová kapacita akce:", capacity)
+                if (!newCapacity) return
+                await firestore.updateDoc(eventRef, { capacity: parseInt(newCapacity) })
+            }
             
             const div = document.createElement('div')
             div.id = `event-${change.doc.id}`
