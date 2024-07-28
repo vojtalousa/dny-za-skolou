@@ -118,6 +118,7 @@ const removeEvent = async (id) => {
 }
 const query = firestore.query(firestore.collection(db, 'events'));
 firestore.onSnapshot(query, (snapshot) => {
+    alert("huh")
     snapshot.docChanges().forEach((change) => {
         if (change.type === 'added') {
             const description = document.createElement('p')
