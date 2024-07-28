@@ -202,8 +202,6 @@ form.onsubmit = async (e) => {
         document.getElementById("form-button-loader").style.display = "inline-block"
         document.getElementById("form-button-text").style.display = "none"
         await signup(email, event_id)
-        document.getElementById("form-button-loader").style.display = "none"
-        document.getElementById("form-button-text").style.display = "inline"
         
         displayMessage(`Zapsáno na "${event_name}"!`, '#43BC50', true)
         disableOthers(event_id)
@@ -211,6 +209,8 @@ form.onsubmit = async (e) => {
         console.error('Error signing up:', e)
         displayMessage('Vybraná akce už není dostupná, nebo jste už zapsaní!')
     }
+    document.getElementById("form-button-loader").style.display = "none"
+    document.getElementById("form-button-text").style.display = "inline"
 }
 
 // window.auth = auth
