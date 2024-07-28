@@ -113,6 +113,7 @@ alert(`Logged in as: ${result.user.email}`)
     }
 })
 
+alert("hmm")
 const removeEvent = async (id) => {
     await firestore.deleteDoc(firestore.doc(db, "events", id))
 }
