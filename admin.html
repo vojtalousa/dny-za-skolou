@@ -155,7 +155,7 @@ firestore.onSnapshot(query, (snapshot) => {
             
             const div = document.createElement('div')
             div.id = `event-${change.doc.id}`
-            div.append(description, button)
+            div.append(description, button, button2, button3, button4)
 
             document.getElementById('events').append(div)
             console.log('Added event: ', change.doc.data());
