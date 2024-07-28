@@ -18,6 +18,7 @@
 <input id="email" name="email" type="email" required>
 <button type="submit">Odebrat účastníka z akce</button>
 </form>
+<div id="events"></div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
 import * as firestore from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js"
@@ -112,7 +113,38 @@ alert(`Logged in as: ${result.user.email}`)
     }
 })
 
-const startTime = await firestore.getDoc(firestore.document(db, "settings", "public"))
-document.innerHtml += startTime.data().start_time
+const removeEvent = async (id) => {
+    await firestore.deleteDoc(firestore.doc(db, "events", id))
+}
+const query = firestore.query(firestore.collection(db, 'events'));
+firestore.onSnapshot(query, (snapshot) => {
+    snapshot.docChanges().forEach((change) => {
+        if (change.type === 'added') {
+            const description = document.createElement('p')
+            description.id = `description-${change.doc.id}`
+            description.innerText = `${change.doc.data().name} (${change.doc.data().teachers})`
 
+            const button = document.createElement('button')
+            button.id = `button-${change.doc.id}`
+            button.innerText = "Odebrat"
+            button.onclick = removeEvent(change.doc.id)
+            
+            const div = document.createElement('div')
+            div.id = `event-${change.doc.id}`
+            div.append(description, button)
+
+            document.getElementById('events').append(div)
+            console.log('Added event: ', change.doc.data());
+        }
+        if (change.type === 'modified') {
+            const label = document.getElementById(`description-${change.doc.id}`)
+            label.innerText = `${change.doc.data().name} (${change.doc.data().teachers})`
+            console.log('Modified event: ', change.doc.data());
+        }
+        if (change.type === 'removed') {
+            document.getElementById(`event-${change.doc.id}`).remove()
+            console.log('Removed event: ', change.doc.data());
+        }
+    });
+});
 </script>
