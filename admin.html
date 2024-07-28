@@ -120,6 +120,8 @@ const query = firestore.query(firestore.collection(db, 'events'));
 firestore.onSnapshot(query, (snapshot) => {
     alert("huh")
     snapshot.docChanges().forEach((change) => {
+        alert(change.type)
+        try {
         if (change.type === 'added') {
             const description = document.createElement('p')
             description.id = `description-${change.doc.id}`
@@ -145,6 +147,9 @@ firestore.onSnapshot(query, (snapshot) => {
         if (change.type === 'removed') {
             document.getElementById(`event-${change.doc.id}`).remove()
             console.log('Removed event: ', change.doc.data());
+        }
+        } catch (e) {
+            alert(e)
         }
     });
 });
