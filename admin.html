@@ -123,7 +123,7 @@ firestore.onSnapshot(query, (snapshot) => {
         if (change.type === 'added') {
             const description = document.createElement('p')
             description.id = `description-${change.doc.id}`
-            description.innerText = `${change.doc.data().name} (${change.doc.data().teachers})`
+            description.innerText = `${change.doc.data().name} (${change.doc.data().teachers}), max. ${change.doc.data().capacity}`
 
             const button = document.createElement('button')
             button.id = `button-${change.doc.id}`
