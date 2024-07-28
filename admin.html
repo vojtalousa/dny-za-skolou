@@ -119,7 +119,7 @@ const removeEvent = async (id) => {
 const query = firestore.query(firestore.collection(db, 'events'));
 firestore.onSnapshot(query, (snapshot) => {
     alert("huh")
-    alert(snapshot.docChanges())
+    alert(JSON.stringify(snapshot.docChanges()))
     snapshot.docChanges().forEach((change) => {
         alert(change.type)
         try {
