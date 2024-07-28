@@ -51,7 +51,7 @@ form.onsubmit = async e => {
         await firestore.addDoc(ref, {
             name: form.elements["name"].value,
             teachers: form.elements["teachers"].value,
-            capacity: form.elements["capacity"].value,
+            capacity: parseInt(form.elements["capacity"].value),
             participants: []
         })
         alert("done")
