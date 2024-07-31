@@ -18,30 +18,39 @@ const firebaseConfig = {
     measurementId: "G-S62KH47PLK"
 };
 
-document.getElementById("login-button-loader").style.display = "inline-block"
-document.getElementById("login-button-text").style.display = "none"
-    
-const error = document.getElementById('error')
-let errorTimeout
-const displayMessage = (message, color = '#E75858', persistent = false) => {
-    clearTimeout(errorTimeout)
-    error.style.backgroundColor = color
-    error.textContent = message
-    error.style.display = "block"
-    const offset = error.getBoundingClientRect().height + 40
-    error.style.transform = `translateX(-50%) translateY(-${offset}px)`
-    if (!persistent) errorTimeout = setTimeout(() => {
-        error.style.transform = "translateX(-50%)"
-        setTimeout(() => error.style.display = "none", 300)
-    }, 3000)
-}
-
 const app = initializeApp(firebaseConfig);
 const db = firestore.getFirestore(app);
 const signupStartPromise = firestore.getDoc(firestore.doc(db, 'settings', 'public')).then(doc => doc.data().start_time.toDate())
+    
+const messageEl = document.getElementById('message')
+const loginSectionEl = document.getElementById('login-section')
+const loginButtonEl = document.getElementById('login-button')
+const loginButtonLoaderEl = document.getElementById('login-button-loader')
+const loginButtonTextEl = document.getElementById('login-button-text')
+const waitingSectionEl = document.getElementById('waiting-section')
+const waitingLoaderEl = document.getElementById('waiting-loader')
+const countdownEl = document.getElementById('countdown')
+const formSectionEl = document.getElementById('form-section')
+const formEventsGroupEl = document.getElementById('form-fieldset')
+const formButtonLoaderEl = document.getElementById('form-button-loader')
+const formButtonTextEl = document.getElementById('form-button-text')
 
-const disableOthers = (id) => {
-    document.getElementById('form-fieldset').disabled = true
+let messageTimeout
+const displayMessage = (text, color = '#E75858', persistent = false) => {
+    clearTimeout(messageTimeout)
+    messageEl.style.backgroundColor = color
+    messageEl.textContent = text
+    messageEl.style.display = "block"
+    const offset = messageEl.getBoundingClientRect().height + 40
+    messageEl.style.transform = `translateX(-50%) translateY(-${offset}px)`
+    if (!persistent) messageTimeout = setTimeout(() => {
+        messageEl.style.transform = "translateX(-50%)"
+        setTimeout(() => messageEl.style.display = "none", 300)
+    }, 3000)
+}
+
+const disableOtherEvents = (id) => {
+    formEventsGroupEl.disabled = true
     document.getElementById('signup-form-button').disabled = true
     document.getElementById(`radio-${id}`).checked = true
 }
@@ -56,35 +65,35 @@ const startCountdown = (signupStart) => {
         if (diff > 86400000) return 'Přihlašování začne za více než 24 hodin'
         return `${hours ? `${pad(hours)}:` : ''}${pad(minutes)}:${pad(seconds)}`
     }
-    const countdown = document.getElementById('countdown')
-    countdown.textContent = getTimeUntilStart()
+    countdownEl.textContent = getTimeUntilStart()
 
     setTimeout(() => {
-        countdown.textContent = getTimeUntilStart()
+        countdownEl.textContent = getTimeUntilStart()
         const interval = setInterval(() => {
             const diff = signupStart - new Date()
             if (diff <= 0) {
                 clearInterval(interval)
-                document.getElementById('waiting-section').style.display = 'none'
-                document.getElementById('form-section').style.display = 'flex'
+                waitingSectionEl.style.display = 'none'
+                formSectionEl.style.display = 'flex'
             }
-            countdown.textContent = getTimeUntilStart()
+            countdownEl.textContent = getTimeUntilStart()
         }, 1000)
     }, 1000 - new Date().getMilliseconds())
 }
 
 const auth = getAuth();
-window.auth = auth
 await setPersistence(auth, inMemoryPersistence)
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
-document.getElementById('login').addEventListener('click', async () => {
-    document.getElementById("login-button-loader").style.display = "inline-block"
-    document.getElementById("login-button-text").style.display = "none"
+loginButtonEl.addEventListener('click', async () => {
+    loginButtonLoaderEl.style.display = "inline-block"
+    loginButtonTextEl.style.display = "none"
+    
     const result = await signInWithPopup(auth, provider);
     console.log('Logged in as:', result.user.email)
-    document.getElementById("login-button-loader").style.display = "none"
-    document.getElementById("login-button-text").style.display = "inline"
+    
+    loginButtonLoaderEl.style.display = "none"
+    loginButtonTextEl.style.display = "inline"
 
     if (!/.+@dgkralupy\.(cz|eu)/.test(result.user.email)) {
         await auth.signOut()
@@ -93,29 +102,31 @@ document.getElementById('login').addEventListener('click', async () => {
         return
     }
 
-    document.getElementById('login-section').style.display = 'none'
-    document.getElementById('waiting-section').style.display = 'flex'
+    loginSectionEl.style.display = 'none'
+    waitingSectionEl.style.display = 'flex'
+
     const signupStart = await signupStartPromise
-    document.getElementById('waiting-loader').style.display = 'none'
-    document.getElementById('countdown').style.display = 'block'
+
+    waitingLoaderEl.style.display = 'none'
+    countdownEl.style.display = 'block'
 
     if (new Date() < signupStart) {
         startCountdown(signupStart)
     } else {
-        document.getElementById('waiting-section').style.display = 'none'
-        document.getElementById('form-section').style.display = 'flex'
+        waitingSectionEl.style.display = 'none'
+        formSectionEl.style.display = 'flex'
 
         const account = await firestore.getDoc(firestore.doc(db, 'users', result.user.email))
         const alreadySignedUp = account.exists()
         if (alreadySignedUp) {
             displayMessage('Už jste zapsaní!', '#3E7BF2', true)
             console.log(`radio-${account.data().event_id}`)
-            disableOthers(account.data().event_id)
+            disableOtherEvents(account.data().event_id)
         }
     }
 })
-document.getElementById("login-button-loader").style.display = "none"
-document.getElementById("login-button-text").style.display = "inline"
+loginButtonLoaderEl.style.display = "none"
+loginButtonTextEl.style.display = "inline"
 
 const query = firestore.query(firestore.collection(db, 'events'));
 let firstUpdate = true
@@ -162,7 +173,7 @@ firestore.onSnapshot(query, (snapshot) => {
             div.className = 'event-parent'
             div.append(radio, label)
 
-            document.getElementById('form-fieldset').append(div)
+            formEventsGroupEl.append(div)
             console.log('Added event: ', change.doc.data());
         }
         if (change.type === 'modified') {
@@ -178,7 +189,7 @@ firestore.onSnapshot(query, (snapshot) => {
     });
 });
 
-const signup = async (email, event_id) => {
+const signupForEvent = async (email, event_id) => {
     const batch = firestore.writeBatch(db);
     const userRef = firestore.doc(db, 'users', email)
     const eventRef = firestore.doc(db, 'events', event_id)
@@ -188,10 +199,10 @@ const signup = async (email, event_id) => {
     await batch.commit();
 }
 
-const form = document.getElementById('signup-form')
-form.onsubmit = async (e) => {
+const signupForm = document.getElementById('signup-form')
+signupForm.onsubmit = async (e) => {
     e.preventDefault()
-    const event_id = form.elements.event.value
+    const event_id = signupForm.elements.event.value
     const event_name = document.querySelector(`#label-${event_id} > .event-name`).textContent
     const email = auth.currentUser?.email
     if (!email) return displayMessage('Nejste přihlášení!')
@@ -199,23 +210,16 @@ form.onsubmit = async (e) => {
 
     console.log('Signing up:', email, event_id)
     try {
-        document.getElementById("form-button-loader").style.display = "inline-block"
-        document.getElementById("form-button-text").style.display = "none"
-        await signup(email, event_id)
+        formButtonLoaderEl.style.display = "inline-block"
+        formButtonTextEl.style.display = "none"
+        await signupForEvent(email, event_id)
         
         displayMessage(`Zapsáno na "${event_name}"!`, '#43BC50', true)
-        disableOthers(event_id)
+        disableOtherEvents(event_id)
     } catch (e) {
         console.error('Error signing up:', e)
         displayMessage('Vybraná akce už není dostupná, nebo jste už zapsaní!')
     }
-    document.getElementById("form-button-loader").style.display = "none"
-    document.getElementById("form-button-text").style.display = "inline"
+    formButtonLoaderEl.style.display = "none"
+    formButtonTextEl.style.display = "inline"
 }
-
-// window.auth = auth
-// window.app = app
-window.db = db
-// window.doc = firestore.doc
-// window.getDoc = firestore.getDoc
-window.firestore = firestore
