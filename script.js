@@ -86,43 +86,50 @@ await setPersistence(auth, inMemoryPersistence)
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
 loginButtonEl.addEventListener('click', async () => {
-    loginButtonLoaderEl.style.display = "inline-block"
-    loginButtonTextEl.style.display = "none"
-    
-    const result = await signInWithPopup(auth, provider);
-    console.log('Logged in as:', result.user.email)
-    
-    loginButtonLoaderEl.style.display = "none"
-    loginButtonTextEl.style.display = "inline"
+    try {
+        loginButtonLoaderEl.style.display = "inline-block"
+        loginButtonTextEl.style.display = "none"
 
-    if (!/.+@dgkralupy\.(cz|eu)/.test(result.user.email)) {
-        await auth.signOut()
-        console.log('Logged out')
-        displayMessage('Přihlásit se můžete pouze školním emailem!')
-        return
-    }
+        const result = await signInWithPopup(auth, provider);
+        console.log('Logged in as:', result.user.email)
 
-    loginSectionEl.style.display = 'none'
-    waitingSectionEl.style.display = 'flex'
+        loginButtonLoaderEl.style.display = "none"
+        loginButtonTextEl.style.display = "inline"
 
-    const signupStart = await signupStartPromise
-
-    waitingLoaderEl.style.display = 'none'
-    countdownEl.style.display = 'block'
-
-    if (new Date() < signupStart) {
-        startCountdown(signupStart)
-    } else {
-        waitingSectionEl.style.display = 'none'
-        formSectionEl.style.display = 'flex'
-
-        const account = await firestore.getDoc(firestore.doc(db, 'users', result.user.email))
-        const alreadySignedUp = account.exists()
-        if (alreadySignedUp) {
-            displayMessage('Už jste zapsaní!', '#3E7BF2', true)
-            console.log(`radio-${account.data().event_id}`)
-            disableOtherEvents(account.data().event_id)
+        if (!/.+@dgkralupy\.(cz|eu)/.test(result.user.email)) {
+            await auth.signOut()
+            console.log('Logged out')
+            displayMessage('Přihlásit se můžete pouze školním emailem!')
+            return
         }
+
+        loginSectionEl.style.display = 'none'
+        waitingSectionEl.style.display = 'flex'
+
+        const signupStart = await signupStartPromise
+
+        waitingLoaderEl.style.display = 'none'
+        countdownEl.style.display = 'block'
+
+        if (new Date() < signupStart) {
+            startCountdown(signupStart)
+        } else {
+            waitingSectionEl.style.display = 'none'
+            formSectionEl.style.display = 'flex'
+
+            const account = await firestore.getDoc(firestore.doc(db, 'users', result.user.email))
+            const alreadySignedUp = account.exists()
+            if (alreadySignedUp) {
+                displayMessage('Už jste zapsaní!', '#3E7BF2', true)
+                console.log(`radio-${account.data().event_id}`)
+                disableOtherEvents(account.data().event_id)
+            }
+        }
+    } catch (e) {
+        console.error('Error logging in:', e)
+        displayMessage('Nepodařilo se přihlásit!')
+        loginButtonLoaderEl.style.display = "none"
+        loginButtonTextEl.style.display = "inline"
     }
 })
 loginButtonLoaderEl.style.display = "none"
