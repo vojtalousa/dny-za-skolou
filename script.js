@@ -55,7 +55,7 @@ const displayMessage = (text, color = '#E75858', persistent = false) => {
     messageEl.style.display = "block"
     window.addEventListener('resize', setOffset)
     setOffset()
-    if (!persistent) messageTimeout = setTimeout(closeMessage, 3000)
+    if (!persistent) messageTimeout = setTimeout(closeMessage, 5000)
 }
 
 const disableOtherEvents = (id) => {
