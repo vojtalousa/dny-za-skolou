@@ -102,7 +102,6 @@ button .loader {
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     left: 50%;
     transform: translateX(-50%);
-    transform-origin: bottom center;
 }
 
 .section {
@@ -114,6 +113,9 @@ button .loader {
     min-height: calc(100dvh - 30px);
     height: fit-content;
     padding: 50px 15%;
+}
+
+.background {
     background-color: #FAFAFA;
     border-radius: 10px;
     border: 2px solid #EFEFEF;
@@ -146,6 +148,7 @@ button .loader {
 
 #form-section {
     display: none;
+    padding: 50px 5%;
 }
 
 #signup-form {
@@ -153,15 +156,14 @@ button .loader {
     flex-direction: column;
     align-items: center;
     gap: 20px;
-    width: 100%;
     min-height: 0;
+    padding: 30px 45px;
 }
 
 #form-fieldset {
-    display: grid;
+    display: inline-grid;
+    grid-template-columns: repeat(2, minmax(0, max-content));
     gap: 10px;
-    grid-template-columns: repeat(auto-fit, 375px);
-    width: 100%;
     justify-content: center;
     border: none;
     padding: 0;
@@ -172,6 +174,8 @@ button .loader {
     display: flex;
     gap: 12px;
     text-align: left;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 input[type=radio] {
@@ -179,6 +183,7 @@ input[type=radio] {
     cursor: pointer;
     height: 16px;
     width: 16px;
+    min-width: 16px;
     border-radius: 50%;
     outline: none;
     border: 2px solid #D9D9D9;
@@ -210,17 +215,16 @@ input[type=radio]:checked::before {
 label {
     cursor: pointer;
     white-space: nowrap;
+    display: grid;
+    grid-template-columns: minmax(0, min-content) 1fr;
 }
 input:disabled+label {
     cursor: not-allowed;
 }
 
 .stop-overflow {
-    max-width: 265px;
     text-overflow: ellipsis;
-    display: inline-block;
     overflow: hidden;
-    vertical-align: sub;
 }
 
 .event-name {
@@ -239,12 +243,20 @@ input:disabled+label {
     margin-left: 10px;
     position: relative;
     top: -1px;
+    justify-self: start;
 }
 
 .event-teachers {
     font-size: 17px;
     font-weight: 600;
     color: #454545;
+    grid-column-start: span 2;
+}
+
+@media screen and (max-width: 600px) {
+    #form-fieldset {
+        grid-template-columns: repeat(1, minmax(0, max-content));
+    }
 }
 
 @media screen and (max-width: 800px) {
@@ -285,11 +297,11 @@ input:disabled+label {
         padding: 10px 15px;
     }
 
-    #form-fieldset {
-        grid-template-columns: repeat(auto-fit, 300px);
+    #signup-form {
+        padding: 25px 20px;
     }
 
-    .stop-overflow {
-        max-width: 200px;
+    #form-section {
+        padding: 0 0 15px;
     }
 }

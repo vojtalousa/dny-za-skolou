@@ -35,24 +35,49 @@ const formEventsGroupEl = document.getElementById('form-fieldset')
 const formButtonLoaderEl = document.getElementById('form-button-loader')
 const formButtonTextEl = document.getElementById('form-button-text')
 
+let allParticipants = []
+let formSectionVisible = false
+
 let messageTimeout
+const setOffset = () => {
+    const offset = messageEl.getBoundingClientRect().height + 40
+    messageEl.style.transform = `translateX(-50%) translateY(-${offset}px)`
+}
+const closeMessage = () => {
+    window.removeEventListener('resize', setOffset)
+    messageEl.style.transform = "translateX(-50%)"
+    setTimeout(() => messageEl.style.display = "none", 300)
+}
 const displayMessage = (text, color = '#E75858', persistent = false) => {
     clearTimeout(messageTimeout)
     messageEl.style.backgroundColor = color
     messageEl.textContent = text
     messageEl.style.display = "block"
-    const offset = messageEl.getBoundingClientRect().height + 40
-    messageEl.style.transform = `translateX(-50%) translateY(-${offset}px)`
-    if (!persistent) messageTimeout = setTimeout(() => {
-        messageEl.style.transform = "translateX(-50%)"
-        setTimeout(() => messageEl.style.display = "none", 300)
-    }, 3000)
+    window.addEventListener('resize', setOffset)
+    setOffset()
+    if (!persistent) messageTimeout = setTimeout(closeMessage, 3000)
 }
 
 const disableOtherEvents = (id) => {
     formEventsGroupEl.disabled = true
     document.getElementById('signup-form-button').disabled = true
     document.getElementById(`radio-${id}`).checked = true
+}
+const setDefaultAvailability = () => {
+    formEventsGroupEl.disabled = false
+    document.getElementById('signup-form-button').disabled = false
+}
+
+const alreadySignedUpCheck = (email) => {
+    const participantData = allParticipants.find(participant => participant.email === email)
+    if (participantData) {
+        displayMessage('Už jste zapsaní!', '#3E7BF2', true)
+        console.log(`radio-${participantData.event_id}`)
+        disableOtherEvents(participantData.event_id)
+    } else {
+        setDefaultAvailability()
+        closeMessage()
+    }
 }
 
 const startCountdown = (signupStart) => {
@@ -73,8 +98,14 @@ const startCountdown = (signupStart) => {
             const diff = signupStart - new Date()
             if (diff <= 0) {
                 clearInterval(interval)
-                waitingSectionEl.style.display = 'none'
-                formSectionEl.style.display = 'flex'
+                if (!auth.currentUser?.email) {
+                    return displayMessage('Chyba v přihlášení, obnovte prosím stránku!')
+                } else {
+                    waitingSectionEl.style.display = 'none'
+                    formSectionEl.style.display = 'flex'
+                    formSectionVisible = true
+                    alreadySignedUpCheck(auth.currentUser.email)
+                }
             }
             countdownEl.textContent = getTimeUntilStart()
         }, 1000)
@@ -116,14 +147,8 @@ loginButtonEl.addEventListener('click', async () => {
         } else {
             waitingSectionEl.style.display = 'none'
             formSectionEl.style.display = 'flex'
-
-            const account = await firestore.getDoc(firestore.doc(db, 'users', result.user.email))
-            const alreadySignedUp = account.exists()
-            if (alreadySignedUp) {
-                displayMessage('Už jste zapsaní!', '#3E7BF2', true)
-                console.log(`radio-${account.data().event_id}`)
-                disableOtherEvents(account.data().event_id)
-            }
+            formSectionVisible = true
+            alreadySignedUpCheck(result.user.email)
         }
     } catch (e) {
         console.error('Error logging in:', e)
@@ -142,6 +167,14 @@ firestore.onSnapshot(query, (snapshot) => {
         document.getElementById('form-loader').style.display = 'none'
         firstUpdate = false
     }
+
+    allParticipants = snapshot.docs.reduce((acc, doc) => acc.concat(doc.data().participants.map(email => {
+        return { email, event_id: doc.id }
+    })), [])
+    const loggedIn = auth.currentUser?.email
+    const hasLocalChanges = snapshot.docChanges().some(change => change.doc.metadata.hasPendingWrites)
+    if (formSectionVisible && loggedIn && !hasLocalChanges) alreadySignedUpCheck(auth.currentUser.email)
+
     const setLabelValue = (label, radio, doc) => {
         const occupied = doc.data().participants.length
         const capacity = doc.data().capacity
@@ -172,7 +205,7 @@ firestore.onSnapshot(query, (snapshot) => {
             availabilitySpan.className = 'event-availability'
             const teachersSpan = document.createElement('span')
             teachersSpan.className = 'event-teachers stop-overflow'
-            label.append(nameSpan, availabilitySpan, document.createElement('br'), teachersSpan)
+            label.append(nameSpan, availabilitySpan, teachersSpan)
             setLabelValue(label, radio, change.doc)
 
             const div = document.createElement('div')
