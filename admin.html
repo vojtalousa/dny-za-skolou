@@ -1,176 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Dny za školou - Admin</title>
+</head>
+<body>
 <button id="login">login</button>
 <form id="set-time">
-<label for="time">Čas začátku přihlašování</label>
-<input id="time" name="time" type="datetime-local" required>
-<button type="submit">Nastavit čas</button>
+    <label for="time">Čas začátku přihlašování</label>
+    <input id="time" name="time" type="datetime-local" required>
+    <button type="submit">Nastavit čas</button>
 </form>
 <form id="remove-participant">
-<label for="time">Email účastníka</label>
-<input id="email" name="email" type="email" required>
-<button type="submit">Odebrat účastníka z akce</button>
+    <label for="time">Email účastníka</label>
+    <input id="email" name="email" type="email" required>
+    <button type="submit">Odebrat účastníka z akce</button>
 </form>
 <div id="events"></div>
 <form id="new-event">
-<label for="name">Název akce</label>
-<input type="text" id="name" name="name" required>
-<label for="teachers">Učitelé na akci</label>
-<input type="text" id="teachers" name="teachers" required>
-<label for="capacity">Kapacita</label>
-<input type="number" id="capacity" name="capacity" required>
-<button type="submit">Přidat akci</button>
+    <label for="name">Název akce</label>
+    <input type="text" id="name" name="name" required>
+    <label for="teachers">Učitelé na akci</label>
+    <input type="text" id="teachers" name="teachers" required>
+    <label for="capacity">Kapacita</label>
+    <input type="number" id="capacity" name="capacity" required>
+    <button type="submit">Přidat akci</button>
 </form>
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-import * as firestore from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js"
-import {
-    getAuth,
-    signInWithPopup,
-    GoogleAuthProvider,
-    setPersistence,
-    inMemoryPersistence
-} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js"
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+    import * as firestore from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js"
+    import {
+        getAuth,
+        signInWithPopup,
+        GoogleAuthProvider,
+        setPersistence,
+        inMemoryPersistence
+    } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js"
 
-const firebaseConfig = {
-    apiKey: "AIzaSyCEmK763aMbHq1WSWEyjehsUR5FQ5hmEpQ",
-    authDomain: "dny-za-skolou-8c8a0.firebaseapp.com",
-    projectId: "dny-za-skolou-8c8a0",
-    storageBucket: "dny-za-skolou-8c8a0.appspot.com",
-    messagingSenderId: "876624624466",
-    appId: "1:876624624466:web:369dc5619d2089b396188b",
-    measurementId: "G-S62KH47PLK"
-};
+    const firebaseConfig = {
+        apiKey: "AIzaSyCEmK763aMbHq1WSWEyjehsUR5FQ5hmEpQ",
+        authDomain: "dny-za-skolou-8c8a0.firebaseapp.com",
+        projectId: "dny-za-skolou-8c8a0",
+        storageBucket: "dny-za-skolou-8c8a0.appspot.com",
+        messagingSenderId: "876624624466",
+        appId: "1:876624624466:web:369dc5619d2089b396188b",
+        measurementId: "G-S62KH47PLK"
+    };
 
-const app = initializeApp(firebaseConfig);
-const db = firestore.getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const db = firestore.getFirestore(app);
 
-const form = document.getElementById("new-event")
-form.onsubmit = async e => {
-    e.preventDefault()
-    try {
-        const ref = firestore.collection(db, "events")
-        await firestore.addDoc(ref, {
-            name: form.elements["name"].value,
-            teachers: form.elements["teachers"].value,
-            capacity: parseInt(form.elements["capacity"].value),
-            participants: []
-        })
-        alert("done")
-    } catch (e) {
-        alert(e)
-    }
-}
-
-const form2 = document.getElementById("set-time")
-form2.onsubmit = async e => {
-    e.preventDefault()
-    try {
-        const ref = firestore.doc(db, "settings", "public")
-        await firestore.setDoc(ref, {
-            start_time: new Date(form2.elements["time"].value)
-        })
-        alert("done")
-    } catch (e) {
-        alert(e)
-    }
-}
-
-const form3 = document.getElementById("remove-participant")
-form3.onsubmit = async e => {
-    e.preventDefault()
-    try {
-        const email = form3.elements["email"].value
-        await firestore.runTransaction(db, async (transaction) => {
-            const userRef = firestore.doc(db, "users", email)
-            const userDoc = await transaction.get(userRef);
-            if (!userDoc.exists()) {
-              throw "User does not exist!";
-            }
-
-            const eventId = userDoc.data().event_id;
-            const eventRef = firestore.doc(db, "events", eventId)
-            transaction.update(eventRef, { participants: firestore.arrayRemove(email) });
-            transaction.delete(userRef)
-        });
-        alert(`Removed user ${email}`)
-    } catch (e) {
-        alert(e)
-    }
-}
-
-const auth = getAuth();
-window.auth = auth
-window.firestore= firestore
-window.db = db
-await setPersistence(auth, inMemoryPersistence)
-const provider = new GoogleAuthProvider();
-provider.setCustomParameters({ prompt: 'select_account' });
-document.getElementById('login').addEventListener('click', async () => {
-    try {
-const result = await signInWithPopup(auth, provider);
-alert(`Logged in as: ${result.user.email}`)
-} catch (e) {
-    window.document.innerHTML = e
-    }
-})
-
-alert("hmm")
-const removeEvent = async (id) => {
-    await firestore.deleteDoc(firestore.doc(db, "events", id))
-}
-const changeEventAttribute = async (doc, attribute, number = false) => {
-    try {
-        const eventRef = firestore.doc(db, "events", doc.id)
-        const newValue = prompt(`Nová hodnota pole "${attribute}":`, doc.data()[attribute])
-        if (!newValue) return
-        await firestore.updateDoc(eventRef, { [attribute]: number ? parseInt(newValue) : newValue })
-    } catch (e) {
-        alert(e)
-    }
-}
-const query = firestore.query(firestore.collection(db, 'events'));
-firestore.onSnapshot(query, (snapshot) => {
-    snapshot.docChanges().forEach((change) => {
+    const form = document.getElementById("new-event")
+    form.onsubmit = async e => {
+        e.preventDefault()
         try {
-        if (change.type === 'added') {
-            const description = document.createElement('p')
-            description.id = `description-${change.doc.id}`
-            const {name, teachers, capacity, participants} = change.doc.data()
-            description.innerText = `${name} (${teachers}) - ${participants.length}/${capacity}`
-
-            const eventRef = firestore.doc(db, "events", change.doc.id)
-            const button = document.createElement('button')
-            button.innerText = "Odebrat"
-            button.onclick = async () => await removeEvent(change.doc.id)
-            const button2 = document.createElement('button')
-            button2.innerText = "Upravit jméno"
-            button2.onclick = async () => await changeEventAttribute(change.doc, "name")
-            const button3 = document.createElement('button')
-            button3.innerText = "Upravit učitele"
-            button3.onclick = async () => await changeEventAttribute(change.doc, "teachers")
-            const button4 = document.createElement('button')
-            button4.innerText = "Upravit kapacitu"
-            button4.onclick = async () => await changeEventAttribute(change.doc, "capacity", true)
-            
-            const div = document.createElement('div')
-            div.id = `event-${change.doc.id}`
-            div.append(description, button, button2, button3, button4)
-
-            document.getElementById('events').append(div)
-            console.log('Added event: ', change.doc.data());
-        }
-        if (change.type === 'modified') {
-            const label = document.getElementById(`description-${change.doc.id}`)
-            const {name, teachers, capacity, participants} = change.doc.data()
-            label.innerText = `${name} (${teachers}) - ${participants.length}/${capacity}`
-            console.log('Modified event: ', change.doc.data());
-        }
-        if (change.type === 'removed') {
-            document.getElementById(`event-${change.doc.id}`).remove()
-            console.log('Removed event: ', change.doc.data());
-        }
+            const ref = firestore.collection(db, "events")
+            await firestore.addDoc(ref, {
+                name: form.elements["name"].value,
+                teachers: form.elements["teachers"].value,
+                capacity: parseInt(form.elements["capacity"].value),
+                participants: []
+            })
+            alert("done")
         } catch (e) {
             alert(e)
         }
+    }
+
+    const form2 = document.getElementById("set-time")
+    form2.onsubmit = async e => {
+        e.preventDefault()
+        try {
+            const ref = firestore.doc(db, "settings", "public")
+            await firestore.setDoc(ref, {
+                start_time: new Date(form2.elements["time"].value)
+            })
+            alert("done")
+        } catch (e) {
+            alert(e)
+        }
+    }
+
+    const form3 = document.getElementById("remove-participant")
+    form3.onsubmit = async e => {
+        e.preventDefault()
+        try {
+            const email = form3.elements["email"].value
+            await firestore.runTransaction(db, async (transaction) => {
+                const userRef = firestore.doc(db, "users", email)
+                const userDoc = await transaction.get(userRef);
+                if (!userDoc.exists()) {
+                    throw "User does not exist!";
+                }
+
+                const eventId = userDoc.data().event_id;
+                const eventRef = firestore.doc(db, "events", eventId)
+                transaction.update(eventRef, { participants: firestore.arrayRemove(email) });
+                transaction.delete(userRef)
+            });
+            alert(`Removed user ${email}`)
+        } catch (e) {
+            alert(e)
+        }
+    }
+
+    const auth = getAuth();
+    window.auth = auth
+    window.firestore= firestore
+    window.db = db
+    await setPersistence(auth, inMemoryPersistence)
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    document.getElementById('login').addEventListener('click', async () => {
+        try {
+            const result = await signInWithPopup(auth, provider);
+            alert(`Logged in as: ${result.user.email}`)
+        } catch (e) {
+            window.document.innerHTML = e
+        }
+    })
+
+    const removeEvent = async (id) => {
+        // await firestore.deleteDoc(firestore.doc(db, "events", id))
+        await firestore.runTransaction(db, async (transaction) => {
+            const eventRef = firestore.doc(db, "events", id)
+            const eventDoc = await transaction.get(eventRef);
+
+            const participants = eventDoc.data().participants
+            for (const email of participants) {
+                const userRef = firestore.doc(db, "users", email)
+                transaction.delete(userRef)
+            }
+
+            transaction.delete(eventRef)
+        });
+    }
+    const changeEventAttribute = async (doc, attribute, number = false) => {
+        try {
+            const eventRef = firestore.doc(db, "events", doc.id)
+            const newValue = prompt(`Nová hodnota pole "${attribute}":`, doc.data()[attribute])
+            if (!newValue) return
+            await firestore.updateDoc(eventRef, { [attribute]: number ? parseInt(newValue) : newValue })
+        } catch (e) {
+            alert(e)
+        }
+    }
+    const query = firestore.query(firestore.collection(db, 'events'));
+    firestore.onSnapshot(query, (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+            try {
+                if (change.type === 'added') {
+                    const description = document.createElement('p')
+                    description.id = `description-${change.doc.id}`
+                    const {name, teachers, capacity, participants} = change.doc.data()
+                    description.innerText = `${name} (${teachers}) - ${participants.length}/${capacity}`
+
+                    const eventRef = firestore.doc(db, "events", change.doc.id)
+                    const button = document.createElement('button')
+                    button.innerText = "Odebrat"
+                    button.onclick = async () => await removeEvent(change.doc.id)
+                    const button2 = document.createElement('button')
+                    button2.innerText = "Upravit jméno"
+                    button2.onclick = async () => await changeEventAttribute(change.doc, "name")
+                    const button3 = document.createElement('button')
+                    button3.innerText = "Upravit učitele"
+                    button3.onclick = async () => await changeEventAttribute(change.doc, "teachers")
+                    const button4 = document.createElement('button')
+                    button4.innerText = "Upravit kapacitu"
+                    button4.onclick = async () => await changeEventAttribute(change.doc, "capacity", true)
+
+                    const div = document.createElement('div')
+                    div.id = `event-${change.doc.id}`
+                    div.append(description, button, button2, button3, button4)
+
+                    document.getElementById('events').append(div)
+                    console.log('Added event: ', change.doc.data());
+                }
+                if (change.type === 'modified') {
+                    const label = document.getElementById(`description-${change.doc.id}`)
+                    const {name, teachers, capacity, participants} = change.doc.data()
+                    label.innerText = `${name} (${teachers}) - ${participants.length}/${capacity}`
+                    console.log('Modified event: ', change.doc.data());
+                }
+                if (change.type === 'removed') {
+                    document.getElementById(`event-${change.doc.id}`).remove()
+                    console.log('Removed event: ', change.doc.data());
+                }
+            } catch (e) {
+                alert(e)
+            }
+        });
     });
-});
 </script>
+</body>
+</html>

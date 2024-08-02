@@ -10,7 +10,7 @@ import {
 
 const firebaseConfig = {
     apiKey: "AIzaSyCEmK763aMbHq1WSWEyjehsUR5FQ5hmEpQ",
-    authDomain: "dny-za-skolou-8c8a0.firebaseapp.com",
+    authDomain: "dny-za-skolou.netlify.app",
     projectId: "dny-za-skolou-8c8a0",
     storageBucket: "dny-za-skolou-8c8a0.appspot.com",
     messagingSenderId: "876624624466",
