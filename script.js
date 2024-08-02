@@ -21,6 +21,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = firestore.getFirestore(app);
 const signupStartPromise = firestore.getDoc(firestore.doc(db, 'settings', 'public')).then(doc => doc.data().start_time.toDate())
+    .catch(() => displayMessage('Chyba při načítání dat, obnovte prosím stránku!', '#E75858', true))
     
 const messageEl = document.getElementById('message')
 const loginSectionEl = document.getElementById('login-section')
@@ -109,7 +110,10 @@ const startCountdown = (signupStart) => {
 }
 
 const auth = getAuth();
-await setPersistence(auth, inMemoryPersistence)
+await setPersistence(auth, inMemoryPersistence).catch((e) => {
+    displayMessage('Chyba při nastavování přihlášení, obnovte prosím stránku!', '#E75858', true)
+    throw new Error(`Error setting persistence: ${e}`)
+})
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
 loginButtonEl.addEventListener('click', async () => {
