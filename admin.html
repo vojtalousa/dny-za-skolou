@@ -15,7 +15,7 @@
     <button type="submit">Nastavit čas</button>
 </form>
 <form id="remove-participant">
-    <label for="time">Email účastníka</label>
+    <label for="email">Email účastníka</label>
     <input id="email" name="email" type="email" required>
     <button type="submit">Odebrat účastníka z akce</button>
 </form>
@@ -158,7 +158,6 @@
                     const {name, teachers, capacity, participants} = change.doc.data()
                     description.innerText = `${name} (${teachers}) - ${participants.length}/${capacity}`
 
-                    const eventRef = firestore.doc(db, "events", change.doc.id)
                     const button = document.createElement('button')
                     button.innerText = "Odebrat"
                     button.onclick = async () => await removeEvent(change.doc.id)
