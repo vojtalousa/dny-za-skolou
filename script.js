@@ -260,24 +260,24 @@ signupForm.onsubmit = async (e) => {
     formButtonTextEl.style.display = "inline"
 }
 
-formSignoutButtonEl.addEventListener('click', async () => {
-    try {
-        const email = auth.currentUser?.email
-        if (!email) return displayMessage('Nejste přihlášení!')
-        await firestore.runTransaction(db, async (transaction) => {
-            const userRef = firestore.doc(db, "users", email);
-            const userDoc = await transaction.get(userRef);
-            if (!userDoc.exists()) {
-                throw "User does not exist!";
-            }
-
-            const eventId = userDoc.data().event_id;
-            const eventRef = firestore.doc(db, "events", eventId)
-            transaction.update(eventRef, { participants: firestore.arrayRemove(email) });
-            transaction.delete(userRef)
-        });
-    } catch (e) {
-        console.error('Error signing out:', e)
-        displayMessage('Nepodařilo se odhlásit!')
-    }
-})
+// formSignoutButtonEl.addEventListener('click', async () => {
+//     try {
+//         const email = auth.currentUser?.email
+//         if (!email) return displayMessage('Nejste přihlášení!')
+//         await firestore.runTransaction(db, async (transaction) => {
+//             const userRef = firestore.doc(db, "users", email);
+//             const userDoc = await transaction.get(userRef);
+//             if (!userDoc.exists()) {
+//                 throw "User does not exist!";
+//             }
+//
+//             const eventId = userDoc.data().event_id;
+//             const eventRef = firestore.doc(db, "events", eventId)
+//             transaction.update(eventRef, { participants: firestore.arrayRemove(email) });
+//             transaction.delete(userRef)
+//         });
+//     } catch (e) {
+//         console.error('Error signing out:', e)
+//         displayMessage('Nepodařilo se odhlásit!')
+//     }
+// })
