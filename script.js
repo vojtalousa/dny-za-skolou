@@ -32,40 +32,36 @@ const waitingLoaderEl = document.getElementById('waiting-loader')
 const countdownEl = document.getElementById('countdown')
 const formSectionEl = document.getElementById('form-section')
 const formEventsGroupEl = document.getElementById('form-fieldset')
+const formSignupButtonEl = document.getElementById('form-signup-button')
 const formButtonLoaderEl = document.getElementById('form-button-loader')
 const formButtonTextEl = document.getElementById('form-button-text')
+const formSignoutButtonEl = document.getElementById('form-signout-button')
 
 let allParticipants = []
 let formSectionVisible = false
 
 let messageTimeout
-const setOffset = () => {
-    const offset = messageEl.getBoundingClientRect().height + 40
-    messageEl.style.transform = `translateX(-50%) translateY(-${offset}px)`
-}
 const closeMessage = () => {
-    window.removeEventListener('resize', setOffset)
-    messageEl.style.transform = "translateX(-50%)"
-    setTimeout(() => messageEl.style.display = "none", 300)
+    messageEl.style.transform = 'translateY(calc(100% + 25px))'
+    setTimeout(() => messageEl.style.visibility = "hidden", 300)
 }
 const displayMessage = (text, color = '#E75858', persistent = false) => {
     clearTimeout(messageTimeout)
     messageEl.style.backgroundColor = color
     messageEl.textContent = text
-    messageEl.style.display = "block"
-    window.addEventListener('resize', setOffset)
-    setOffset()
+    messageEl.style.visibility = "visible"
+    messageEl.style.transform = "translateY(0)"
     if (!persistent) messageTimeout = setTimeout(closeMessage, 5000)
 }
 
 const disableOtherEvents = (id) => {
     formEventsGroupEl.disabled = true
-    document.getElementById('signup-form-button').disabled = true
+    formSignupButtonEl.disabled = true
     document.getElementById(`radio-${id}`).checked = true
 }
 const setDefaultAvailability = () => {
     formEventsGroupEl.disabled = false
-    document.getElementById('signup-form-button').disabled = false
+    formSignupButtonEl.disabled = false
 }
 
 const alreadySignedUpCheck = (email) => {
@@ -263,3 +259,25 @@ signupForm.onsubmit = async (e) => {
     formButtonLoaderEl.style.display = "none"
     formButtonTextEl.style.display = "inline"
 }
+
+formSignoutButtonEl.addEventListener('click', async () => {
+    try {
+        const email = auth.currentUser?.email
+        if (!email) return displayMessage('Nejste přihlášení!')
+        await firestore.runTransaction(db, async (transaction) => {
+            const userRef = firestore.doc(db, "users", email);
+            const userDoc = await transaction.get(userRef);
+            if (!userDoc.exists()) {
+                throw "User does not exist!";
+            }
+
+            const eventId = userDoc.data().event_id;
+            const eventRef = firestore.doc(db, "events", eventId)
+            transaction.update(eventRef, { participants: firestore.arrayRemove(email) });
+            transaction.delete(userRef)
+        });
+    } catch (e) {
+        console.error('Error signing out:', e)
+        displayMessage('Nepodařilo se odhlásit!')
+    }
+})
