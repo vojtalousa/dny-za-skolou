@@ -168,7 +168,6 @@ button .loader {
     align-items: center;
     gap: 20px;
     min-height: 0;
-    padding: 30px 45px;
 }
 
 #form-fieldset {
@@ -176,9 +175,9 @@ button .loader {
     grid-template-columns: repeat(2, minmax(0, max-content));
     gap: 10px;
     justify-content: center;
-    border: none;
-    padding: 0;
     margin: 0;
+    padding: 35px 45px;
+    border-radius: 18px;
 }
 
 .event-parent {
@@ -196,13 +195,29 @@ input[type=radio] {
     border-radius: 50%;
     outline: none;
     border: 2px solid #D9D9D9;
+    background-color: white;
     margin: 2px 0 0;
+    transition: background-color 0.03s, border-color 0.03s;
 }
 
 input[type=radio]:disabled {
-    border-color: #D9D9D9;
+    border-color: #CECECE;
     background-color: #D9D9D9;
     cursor: not-allowed;
+}
+
+input[type=radio]:hover:not(:disabled) {
+    background-color: #FAFAFA;
+}
+
+input[type=radio]:disabled:not(:checked) + label .event-name {
+    color: #A7A7A7;
+}
+input[type=radio]:disabled:not(:checked) + label .event-teachers {
+    color: #B7B7B7;
+}
+input[type=radio]:disabled:not(:checked) + label .event-availability {
+    background-color: #BABABA !important;
 }
 
 input[type=radio]:checked {
@@ -294,6 +309,10 @@ input:disabled+label {
         font-size: 18px;
     }
 
+    .background {
+        border-radius: 18px;
+    }
+
     .event-name {
         font-size: 17px;
     }
@@ -311,11 +330,11 @@ input:disabled+label {
         padding: 10px 15px;
     }
 
-    #signup-form {
-        padding: 25px 20px;
+    #form-section {
+        padding: 0 0 20px;
     }
 
-    #form-section {
-        padding: 0 0 15px;
+    #form-fieldset {
+        padding: 25px 20px;
     }
 }

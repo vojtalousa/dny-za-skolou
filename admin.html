@@ -9,26 +9,29 @@
 </head>
 <body>
 <button id="login">login</button>
-<form id="set-time">
-    <label for="time">Čas začátku přihlašování</label>
-    <input id="time" name="time" type="datetime-local" required>
-    <button type="submit">Nastavit čas</button>
-</form>
-<form id="remove-participant">
-    <label for="email">Email účastníka</label>
-    <input id="email" name="email" type="email" required>
-    <button type="submit">Odebrat účastníka z akce</button>
-</form>
-<div id="events"></div>
-<form id="new-event">
-    <label for="name">Název akce</label>
-    <input type="text" id="name" name="name" required>
-    <label for="teachers">Učitelé na akci</label>
-    <input type="text" id="teachers" name="teachers" required>
-    <label for="capacity">Kapacita</label>
-    <input type="number" id="capacity" name="capacity" required>
-    <button type="submit">Přidat akci</button>
-</form>
+<button id="logout" style="display: none">logout</button>
+<div id="options" style="display: none">
+    <form id="set-time">
+        <label for="time">Čas začátku přihlašování</label>
+        <input id="time" name="time" type="datetime-local" required>
+        <button type="submit">Nastavit čas</button>
+    </form>
+    <form id="remove-participant">
+        <label for="email">Email účastníka</label>
+        <input id="email" name="email" type="email" required>
+        <button type="submit">Odebrat účastníka z akce</button>
+    </form>
+    <div id="events"></div>
+    <form id="new-event">
+        <label for="name">Název akce</label>
+        <input type="text" id="name" name="name" required>
+        <label for="teachers">Učitelé na akci</label>
+        <input type="text" id="teachers" name="teachers" required>
+        <label for="capacity">Kapacita</label>
+        <input type="number" id="capacity" name="capacity" required>
+        <button type="submit">Přidat akci</button>
+    </form>
+</div>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
     import * as firestore from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js"
@@ -42,7 +45,7 @@
 
     const firebaseConfig = {
         apiKey: "AIzaSyCEmK763aMbHq1WSWEyjehsUR5FQ5hmEpQ",
-        authDomain: "dny-za-skolou-8c8a0.firebaseapp.com",
+        authDomain: "dny-za-skolou.netlify.app",
         projectId: "dny-za-skolou-8c8a0",
         storageBucket: "dny-za-skolou-8c8a0.appspot.com",
         messagingSenderId: "876624624466",
@@ -118,25 +121,38 @@
         try {
             const result = await signInWithPopup(auth, provider);
             alert(`Logged in as: ${result.user.email}`)
+            document.getElementById('login').style.display = 'none'
+            document.getElementById('logout').style.display = 'block'
+            document.getElementById('options').style.display = 'block'
         } catch (e) {
             window.document.innerHTML = e
         }
     })
+    document.getElementById('logout').addEventListener('click', async () => {
+        await auth.signOut()
+        document.getElementById('login').style.display = 'block'
+        document.getElementById('logout').style.display = 'none'
+        document.getElementById('options').style.display = 'none'
+    })
 
     const removeEvent = async (id) => {
-        // await firestore.deleteDoc(firestore.doc(db, "events", id))
-        await firestore.runTransaction(db, async (transaction) => {
-            const eventRef = firestore.doc(db, "events", id)
-            const eventDoc = await transaction.get(eventRef);
+        try {
+            // await firestore.deleteDoc(firestore.doc(db, "events", id))
+            await firestore.runTransaction(db, async (transaction) => {
+                const eventRef = firestore.doc(db, "events", id)
+                const eventDoc = await transaction.get(eventRef);
 
-            const participants = eventDoc.data().participants
-            for (const email of participants) {
-                const userRef = firestore.doc(db, "users", email)
-                transaction.delete(userRef)
-            }
+                const participants = eventDoc.data().participants
+                for (const email of participants) {
+                    const userRef = firestore.doc(db, "users", email)
+                    transaction.delete(userRef)
+                }
 
-            transaction.delete(eventRef)
-        });
+                transaction.delete(eventRef)
+            });
+        } catch (e) {
+            alert(e)
+        }
     }
     const changeEventAttribute = async (doc, attribute, number = false) => {
         try {
