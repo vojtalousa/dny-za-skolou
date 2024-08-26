@@ -38,7 +38,6 @@ const formButtonLoaderEl = document.getElementById('form-button-loader')
 const formButtonTextEl = document.getElementById('form-button-text')
 const formSignoutButtonEl = document.getElementById('form-signout-button')
 
-let allParticipants = []
 let formSectionVisible = false
 let alreadySignedUpDisplayed = false
 
@@ -66,8 +65,7 @@ const setDefaultAvailability = () => {
     formSignupButtonEl.disabled = false
 }
 
-const alreadySignedUpCheck = (email) => {
-    const participantData = allParticipants.find(participant => participant.email === email)
+const alreadySignedUpCheck = (participantData) => {
     if (participantData) {
         displayMessage('Už jste zapsaní!', '#3E7BF2', true)
         alreadySignedUpDisplayed = true
@@ -172,13 +170,6 @@ firestore.onSnapshot(query, (snapshot) => {
         firstUpdate = false
     }
 
-    allParticipants = snapshot.docs.reduce((acc, doc) => acc.concat(doc.data().participants.map(email => {
-        return { email, event_id: doc.id }
-    })), [])
-    const loggedIn = auth.currentUser?.email
-    const hasLocalChanges = snapshot.docChanges().some(change => change.doc.metadata.hasPendingWrites)
-    if (formSectionVisible && loggedIn && !hasLocalChanges) alreadySignedUpCheck(auth.currentUser.email)
-
     const setLabelValue = (label, radio, doc) => {
         const occupied = doc.data().participants.length
         const capacity = doc.data().capacity
@@ -233,6 +224,16 @@ firestore.onSnapshot(query, (snapshot) => {
             console.log('Removed event: ', change.doc.data());
         }
     });
+
+    const loggedIn = auth.currentUser?.email
+    const hasLocalChanges = snapshot.docChanges().some(change => change.doc.metadata.hasPendingWrites)
+    if (formSectionVisible && loggedIn && !hasLocalChanges) {
+        const allParticipants = snapshot.docs.reduce((acc, doc) => acc.concat(doc.data().participants.map(email => {
+            return { email, event_id: doc.id }
+        })), [])
+        const participantData = allParticipants.find(participant => participant.email === email)
+        alreadySignedUpCheck(participantData)
+    }
 });
 
 const signupForEvent = async (email, event_id) => {
