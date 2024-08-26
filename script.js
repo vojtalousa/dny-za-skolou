@@ -40,6 +40,7 @@ const formSignoutButtonEl = document.getElementById('form-signout-button')
 
 let allParticipants = []
 let formSectionVisible = false
+let alreadySignedUpDisplayed = false
 
 let messageTimeout
 const closeMessage = () => {
@@ -69,11 +70,14 @@ const alreadySignedUpCheck = (email) => {
     const participantData = allParticipants.find(participant => participant.email === email)
     if (participantData) {
         displayMessage('Už jste zapsaní!', '#3E7BF2', true)
-        console.log(`radio-${participantData.event_id}`)
+        alreadySignedUpDisplayed = true
         disableOtherEvents(participantData.event_id)
     } else {
         setDefaultAvailability()
-        closeMessage()
+        if (alreadySignedUpDisplayed) {
+            closeMessage()
+            alreadySignedUpDisplayed = false
+        }
     }
 }
 
@@ -185,7 +189,9 @@ firestore.onSnapshot(query, (snapshot) => {
         label.querySelector('.event-availability').textContent = availability
         label.querySelector('.event-availability').style.backgroundColor = availabilityColor
         label.querySelector('.event-teachers').textContent = teachers
-        radio.disabled = occupied >= capacity
+        const full = occupied >= capacity
+        radio.disabled = full
+        if (full) radio.checked = false
     }
     snapshot.docChanges().forEach((change) => {
         if (change.type === 'added') {
@@ -194,7 +200,7 @@ firestore.onSnapshot(query, (snapshot) => {
             radio.name = 'event'
             radio.value = change.doc.id
             radio.id = `radio-${change.doc.id}`
-            radio.required = false
+            radio.required = true
 
             const label = document.createElement('label')
             label.htmlFor = `radio-${change.doc.id}`
@@ -255,10 +261,11 @@ signupForm.onsubmit = async (e) => {
         await signupForEvent(email, event_id)
         
         displayMessage(`Zapsáno na "${event_name}"!`, '#43BC50', true)
+        alreadySignedUpDisplayed = true
         disableOtherEvents(event_id)
     } catch (e) {
         console.error('Error signing up:', e)
-        displayMessage('Vybraná akce už není dostupná, nebo jste už zapsaní!')
+        displayMessage('Nepodařilo se přihlásit!')
     }
     formButtonLoaderEl.style.display = "none"
     formButtonTextEl.style.display = "inline"
