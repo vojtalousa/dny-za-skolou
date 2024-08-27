@@ -69,9 +69,11 @@ const setDefaultAvailability = () => {
 const alreadySignedUpCheck = (email) => {
     const participantData = allParticipants.find(participant => participant.email === email)
     if (participantData) {
-        displayMessage('Už jste zapsaní!', '#3E7BF2', true)
-        alreadySignedUpDisplayed = true
         disableOtherEvents(participantData.event_id)
+        if (!alreadySignedUpDisplayed) {
+            displayMessage('Už jste zapsaní!', '#3E7BF2', true)
+            alreadySignedUpDisplayed = true
+        }
     } else {
         setDefaultAvailability()
         if (alreadySignedUpDisplayed) {
