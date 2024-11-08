@@ -147,7 +147,7 @@ const eventListener = new FirestoreListener('events')
 eventListener.addEventListener('change', () => {
     document.getElementById('form-loader').style.display = 'none'
 }, { once: true })
-eventListener.addEventListener('change', (snapshot) => {
+eventListener.addEventListener('change', ({detail: snapshot}) => {
     allParticipants = snapshot.docs.reduce((acc, doc) => acc.concat(doc.data().participants.map(email => {
         return { email, event_id: doc.id }
     })), [])
@@ -156,7 +156,7 @@ eventListener.addEventListener('change', (snapshot) => {
     const hasLocalChanges = snapshot.docChanges().some(change => change.doc.metadata.hasPendingWrites)
     if (formSectionVisible && loggedIn && !hasLocalChanges) alreadySignedUpCheck(auth.currentUser.email)
 })
-eventListener.addEventListener('added', (change) => {
+eventListener.addEventListener('added', ({detail: change}) => {
     const radio = document.createElement('input')
     radio.type = 'radio'
     radio.name = 'event'
@@ -184,13 +184,13 @@ eventListener.addEventListener('added', (change) => {
     formEventsGroupEl.append(div)
     console.log('Added event: ', change.doc.data());
 })
-eventListener.addEventListener('modified', (change) => {
+eventListener.addEventListener('modified', ({detail: change}) => {
     const label = document.getElementById(`label-${change.doc.id}`)
     const radio = document.getElementById(`radio-${change.doc.id}`)
     setLabelValue(label, radio, change.doc)
     console.log('Modified event: ', change.doc.data());
 })
-eventListener.addEventListener('removed', (change) => {
+eventListener.addEventListener('removed', ({detail: change}) => {
     document.getElementById(`event-${change.doc.id}`).remove()
     console.log('Removed event: ', change.doc.data());
 })

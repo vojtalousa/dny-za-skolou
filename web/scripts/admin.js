@@ -78,7 +78,6 @@ document.getElementById('logout').addEventListener('click', async () => {
 
 const removeEvent = async (id) => {
     try {
-        // await firestore.deleteDoc(firestore.doc(db, "events", id))
         await firestore.runTransaction(db, async (transaction) => {
             const eventRef = firestore.doc(db, "events", id)
             const eventDoc = await transaction.get(eventRef);
