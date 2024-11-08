@@ -15,8 +15,8 @@ Vytvořený pro Dvořákovo gymnázium.
 
 ## Struktura
 - `/web/` - statické webové rozhraní
+- `/web/_redirects` - definuje Google přihlášení na vlastní doméně, ve [formátu Netlify redirects](https://docs.netlify.com/routing/redirects/#syntax-for-the-redirects-file)
 - `/firestore/` - dokumentace a konfigurace databáze Firestore
-- `/_redirects` - definuje Google přihlášení na vlastní doméně, ve [formátu Netlify redirects](https://docs.netlify.com/routing/redirects/#syntax-for-the-redirects-file)
 
 ## Instalace
 1. Vytvořte [Firebase](https://console.firebase.google.com/) projekt
@@ -24,5 +24,5 @@ Vytvořený pro Dvořákovo gymnázium.
 3. Přidejte svůj email do pole admin v `settings/private`
 4. Doplňte [Firestore konfiguraci](https://support.google.com/firebase/answer/7015592#zippy=%2Cin-this-article) v `/web/scripts/config.js`
 5. Nahrajte statické soubory z `/web/` na hosting
-6. Nastavte redirect z `https://PROJECT_ID.firebaseapp.com/__/auth/` na `/__/auth/` (pro hosting na [Netlify](https://www.netlify.com/) můžete použít `/_redirects`)
+6. Nastavte redirect z `https://PROJECT_ID.firebaseapp.com/__/auth/` na `/__/auth/` (pro hosting na [Netlify](https://www.netlify.com/) můžete použít `/web/_redirects`)
 7. Přidejte začátek přihlašování a akce přes webové rozhraní na `/admin`
