@@ -215,6 +215,7 @@ signupForm.onsubmit = async (e) => {
     if (!event_id) return displayMessage('Není vybraná žádná akce!')
 
     console.log('Signing up:', email, event_id)
+    formSignupButtonEl.disabled = true
     try {
         formButtonLoaderEl.style.display = "inline-block"
         formButtonTextEl.style.display = "none"
@@ -226,6 +227,7 @@ signupForm.onsubmit = async (e) => {
     } catch (e) {
         console.error('Error signing up:', e)
         displayMessage('Nepodařilo se přihlásit!')
+        formSignupButtonEl.disabled = false
     }
     formButtonLoaderEl.style.display = "none"
     formButtonTextEl.style.display = "inline"
