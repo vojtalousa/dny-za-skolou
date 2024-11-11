@@ -11,12 +11,28 @@ const handle = async (action, args = []) => {
     }
 }
 
+const {auth, provider} = await getGoogleAuth()
+const loginEl = document.getElementById('login-button')
+loginEl.addEventListener('click', () => handle(async () => {
+    const result = await signInWithPopup(auth, provider);
+    document.getElementById('login-section').style.display = 'none'
+    document.getElementById('options-section').style.display = 'flex'
+    return `Přihlášen uživatel: ${result.user.email}`
+}))
+const logoutEl = document.getElementById('logout-button')
+logoutEl.addEventListener('click', () => handle(async () => {
+    await auth.signOut()
+    document.getElementById('login-section').style.display = 'block'
+    document.getElementById('options-section').style.display = 'none'
+    return "Odhlášení proběhlo úspěšně!"
+}))
+
 const addFormHandler = (formId, action) => {
     const form = document.getElementById(formId)
-    form.onsubmit = async event => {
+    form.addEventListener('submit', async event => {
         event.preventDefault()
         await handle(action, [form])
-    }
+    })
 }
 
 addFormHandler("new-event", async form => {
@@ -51,24 +67,6 @@ addFormHandler("remove-participant", async form => {
     return "Účastník byl úspěšně odebrán!"
 })
 
-const {auth, provider} = await getGoogleAuth()
-const loginEl = document.getElementById('login')
-loginEl.addEventListener('click', () => handle(async () => {
-    const result = await signInWithPopup(auth, provider);
-    document.getElementById('login').style.display = 'none'
-    document.getElementById('logout').style.display = 'block'
-    document.getElementById('options').style.display = 'block'
-    return `Přihlášen uživatel: ${result.user.email}`
-}))
-const logoutEl = document.getElementById('logout')
-logoutEl.addEventListener('click', () => handle(async () => {
-    await auth.signOut()
-    document.getElementById('login').style.display = 'block'
-    document.getElementById('logout').style.display = 'none'
-    document.getElementById('options').style.display = 'none'
-    return "Odhlášení proběhlo úspěšně!"
-}))
-
 const removeEvent = async (id) => handle(async () => {
     await firestore.runTransaction(db, async (transaction) => {
         const eventRef = firestore.doc(db, "events", id)
@@ -101,20 +99,31 @@ eventListener.addEventListener('added', ({detail: change}) => {
 
     const button = document.createElement('button')
     button.innerText = "Odebrat"
-    button.onclick = async () => await removeEvent(change.doc.id)
+    button.addEventListener('click', async () => {
+        await removeEvent(change.doc.id)
+    })
     const button2 = document.createElement('button')
     button2.innerText = "Upravit jméno"
-    button2.onclick = async () => await changeEventAttribute(change.doc, "name")
+    button2.addEventListener('click', async () => {
+        await changeEventAttribute(change.doc, "name")
+    })
     const button3 = document.createElement('button')
     button3.innerText = "Upravit učitele"
-    button3.onclick = async () => await changeEventAttribute(change.doc, "teachers")
+    button3.addEventListener('click', async () => {
+        await changeEventAttribute(change.doc, "teachers")
+    })
     const button4 = document.createElement('button')
     button4.innerText = "Upravit kapacitu"
-    button4.onclick = async () => await changeEventAttribute(change.doc, "capacity", true)
+    button4.addEventListener('click', async () => {
+        await changeEventAttribute(change.doc, "capacity", true)
+    })
 
     const div = document.createElement('div')
     div.id = `event-${change.doc.id}`
-    div.append(description, button, button2, button3, button4)
+    const buttons = document.createElement('div')
+    buttons.classList.add('buttons')
+    buttons.append(button, button2, button3, button4)
+    div.append(description, buttons)
 
     document.getElementById('events').append(div)
 })

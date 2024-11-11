@@ -9,7 +9,7 @@ import {
 
 const firebaseConfig = {
     apiKey: "AIzaSyCrjGr5FZ5CEJLs1ng1NxQNbi8mJxAvsqE",
-    authDomain: "dny-za-skolou.netlify.app",
+    authDomain: window.location.hostname === 'localhost' ? "dny-za-skolou-4482.firebaseapp.com" : 'dny-za-skolou.netlify.app',
     projectId: "dny-za-skolou-4482",
     storageBucket: "dny-za-skolou-4482.firebasestorage.app",
     messagingSenderId: "90174157410",

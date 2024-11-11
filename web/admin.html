@@ -15,32 +15,41 @@
     <link rel="icon" href="/favicon.ico" sizes="48x48">
     <link rel="icon" href="/favicons/any.svg" sizes="any" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/favicons/large-180.png"/>
-    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="manifest" href="/site.webmanifest"/>
 </head>
 <body>
-<button id="login">login</button>
-<button id="logout" style="display: none">logout</button>
-<div id="options" style="display: none">
-    <form id="set-time">
+<div id="login-section" class="section background" style="display: none">
+    <h1>Přihlášení do administrativní sekce</h1>
+    <button id="login-button">Přihlásit se</button>
+</div>
+<button id="logout-button" style="display: none">logout</button>
+<div id="options-section" style="display: block">
+    <form id="set-time" class="background">
         <label for="time">Čas začátku přihlašování</label>
         <input id="time" name="time" type="datetime-local" required>
         <button type="submit">Nastavit čas</button>
     </form>
-    <form id="remove-participant">
+    <form id="remove-participant" class="background">
         <label for="email">Email účastníka</label>
         <input id="email" name="email" type="email" required>
         <button type="submit">Odebrat účastníka z akce</button>
     </form>
-    <div id="events"></div>
-    <form id="new-event">
-        <label for="name">Název akce</label>
-        <input type="text" id="name" name="name" required>
-        <label for="teachers">Učitelé na akci</label>
-        <input type="text" id="teachers" name="teachers" required>
-        <label for="capacity">Kapacita</label>
-        <input type="number" id="capacity" name="capacity" required>
+    <form id="new-event" class="background">
+        <div>
+            <label for="name">Název akce</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        <div>
+            <label for="teachers">Učitelé na akci</label>
+            <input type="text" id="teachers" name="teachers" required>
+        </div>
+        <div>
+            <label for="capacity">Kapacita</label>
+            <input type="number" id="capacity" name="capacity" required>
+        </div>
         <button type="submit">Přidat akci</button>
     </form>
+    <div id="events" class="background"></div>
 </div>
 <script type="module" src="/scripts/admin.js"></script>
 </body>

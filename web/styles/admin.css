@@ -1,0 +1,38 @@
+#options-section button {
+    padding: 7px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+#options-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+input[type="text"], input[type="datetime-local"], input[type="number"], input[type="email"] {
+    height: 30px;
+    border-radius: 7px;
+    border: 1px solid grey;
+    padding: 0 10px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+form {
+    padding: 15px;
+}
+
+#new-event {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+#new-event input[type="text"], #new-event input[type="number"] {
+    width: 100%;
+}
