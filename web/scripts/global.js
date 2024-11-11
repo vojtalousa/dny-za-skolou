@@ -8,13 +8,13 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js"
 
 const firebaseConfig = {
-    apiKey: "AIzaSyCEmK763aMbHq1WSWEyjehsUR5FQ5hmEpQ",
+    apiKey: "AIzaSyCrjGr5FZ5CEJLs1ng1NxQNbi8mJxAvsqE",
     authDomain: "dny-za-skolou.netlify.app",
-    projectId: "dny-za-skolou-8c8a0",
-    storageBucket: "dny-za-skolou-8c8a0.appspot.com",
-    messagingSenderId: "876624624466",
-    appId: "1:876624624466:web:369dc5619d2089b396188b",
-    measurementId: "G-S62KH47PLK"
+    projectId: "dny-za-skolou-4482",
+    storageBucket: "dny-za-skolou-4482.firebasestorage.app",
+    messagingSenderId: "90174157410",
+    appId: "1:90174157410:web:cafc26ecdb0e07d389573b",
+    measurementId: "G-J9070W0SLY"
 };
 
 const app = initializeApp(firebaseConfig);

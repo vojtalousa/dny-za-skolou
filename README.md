@@ -20,9 +20,14 @@ Vytvořený pro Dvořákovo gymnázium.
 
 ## Instalace
 1. Vytvořte [Firebase](https://console.firebase.google.com/) projekt
-2. Nastavte Firestore rules a collections podle dokumentace v `/firestore/`
-3. Přidejte svůj email do pole admin v `settings/private`
-4. Doplňte [Firestore konfiguraci](https://support.google.com/firebase/answer/7015592#zippy=%2Cin-this-article) v `/web/scripts/config.js`
-5. Nahrajte statické soubory z `/web/` na hosting
-6. Nastavte redirect z `https://PROJECT_ID.firebaseapp.com/__/auth/` na `/__/auth/` (pro hosting na [Netlify](https://www.netlify.com/) můžete použít `/web/_redirects`)
-7. Přidejte začátek přihlašování a akce přes webové rozhraní na `/admin`
+2. Přidejte ve Firebase webovou aplikaci 
+3. Doplňte [Firebase konfiguraci](https://support.google.com/firebase/answer/7015592#zippy=%2Cin-this-article) v `/web/scripts/config.js`
+4. `authDomain` v konfiguraci nastavte na vaši doménu 
+5. V Firebase console aktivujte Authentication a zapněte Google přihlašování 
+6. V nastavení Firebase Authentication autorizujte vaši doménu 
+7. Nastavte redirect z `https://PROJECT_ID.firebaseapp.com/__/auth/` na `/__/auth/` (pro hosting na [Netlify](https://www.netlify.com/) můžete použít `/web/_redirects`)
+8. V Firebase console aktivujte Firestore Database a z dokumentace `/firestore/` doplňte rules 
+9. Ručně vytvořte collection `settings` a oba dokumenty v ní 
+10. Přidejte svůj email do pole admin v `settings/private`
+11. Nahrajte statické soubory z `/web/` na hosting 
+12. Přidejte začátek přihlašování a akce přes webové rozhraní na `/admin`
