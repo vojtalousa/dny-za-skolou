@@ -207,28 +207,8 @@ noscript {
 }
 
 @media screen and (max-width: 800px) {
-    .section {
-        padding: 50px 20px;
-    }
-
-    h1 {
-        font-size: 25px;
-    }
-    
     #countdown {
         font-size: 40px;
-    }
-
-    p {
-        font-size: 17px;
-    }
-
-    button {
-        font-size: 18px;
-    }
-
-    .background {
-        border-radius: 18px;
     }
 
     .event-name {
@@ -241,11 +221,6 @@ noscript {
 
     .event-teachers {
         font-size: 15px;
-    }
-
-    #message {
-        font-size: 16px;
-        padding: 10px 15px;
     }
 
     #form-section {

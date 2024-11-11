@@ -19,37 +19,43 @@
 </head>
 <body>
 <div id="login-section" class="section background">
-    <h1>Přihlášení do administrativní sekce</h1>
+    <h1>Přihlášení do administrace</h1>
     <button id="login-button">Přihlásit se</button>
 </div>
 <button id="logout-button" style="display: none">logout</button>
 <div id="options-section" style="display: none">
-    <form id="set-time" class="background">
+    <form class="single-input-layout background" id="set-time">
         <label for="time">Čas začátku přihlašování</label>
         <input id="time" name="time" type="datetime-local" required>
         <button type="submit">Nastavit čas</button>
     </form>
-    <form id="remove-participant" class="background">
+    <form class="single-input-layout background" id="remove-participant">
         <label for="email">Email účastníka</label>
-        <input id="email" name="email" type="email" required>
-        <button type="submit">Odebrat účastníka z akce</button>
+        <input placeholder="email@dgkralupy.eu" id="email" name="email" type="email" required>
+        <button class="red" type="submit">Odebrat účastníka z akce</button>
     </form>
     <form id="new-event" class="background">
         <div>
             <label for="name">Název akce</label>
-            <input type="text" id="name" name="name" required>
+            <input placeholder="LEGOLAND" type="text" id="name" name="name" required>
         </div>
         <div>
             <label for="teachers">Učitelé na akci</label>
-            <input type="text" id="teachers" name="teachers" required>
+            <input placeholder="Junášková, Junášek" type="text" id="teachers" name="teachers" required>
         </div>
         <div>
             <label for="capacity">Kapacita</label>
-            <input type="number" id="capacity" name="capacity" required>
+            <input placeholder="13" type="number" id="capacity" name="capacity" required>
         </div>
         <button type="submit">Přidat akci</button>
     </form>
-    <div id="events" class="background"></div>
+    <div id="events" class="background">
+        <div class="events-header">
+            <p>Seznam akcí</p>
+            <label for="file-import-button" class="file-import-label">Přidat akce ze souboru .csv</label>
+            <input type="file" id="file-import-button" accept="text/csv">
+        </div>
+    </div>
 </div>
 <script type="module" src="/scripts/admin.js"></script>
 </body>

@@ -1,6 +1,7 @@
 import {db, FirestoreListener, getGoogleAuth, displayMessage} from "./global.js";
 import {signInWithPopup} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
 import * as firestore from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+import CSV from "./csv-parser.js";
 
 const handle = async (action, args = []) => {
     try {
@@ -35,15 +36,16 @@ const addFormHandler = (formId, action) => {
     })
 }
 
-addFormHandler("new-event", async form => {
+const addEvent = async (name, teachers, capacity) => {
     const ref = firestore.collection(db, "events")
-    await firestore.addDoc(ref, {
-        name: form.elements["name"].value,
-        teachers: form.elements["teachers"].value,
-        capacity: parseInt(form.elements["capacity"].value),
-        participants: []
-    })
+    await firestore.addDoc(ref, { name, teachers, capacity, participants: [] })
     return "Akce byla úspěšně vytvořena!"
+}
+addFormHandler("new-event", async form => {
+    const name = form.elements["name"].value
+    const teachers = form.elements["teachers"].value
+    const capacity = parseInt(form.elements["capacity"].value)
+    return await addEvent(name, teachers, capacity)
 })
 addFormHandler("set-time", async form => {
     const ref = firestore.doc(db, "settings", "public")
@@ -98,25 +100,26 @@ eventListener.addEventListener('added', ({detail: change}) => {
     const {name, teachers, capacity, participants} = change.doc.data()
     description.innerText = `${name} (${teachers}) - ${participants.length}/${capacity}`
 
-    const button = document.createElement('button')
-    button.innerText = "Odebrat"
-    button.addEventListener('click', async () => {
-        await removeEvent(change.doc.id)
-    })
-    const button2 = document.createElement('button')
-    button2.innerText = "Upravit jméno"
-    button2.addEventListener('click', async () => {
+    const button1 = document.createElement('button')
+    button1.innerText = "Upravit jméno"
+    button1.addEventListener('click', async () => {
         await changeEventAttribute(change.doc, "name")
     })
-    const button3 = document.createElement('button')
-    button3.innerText = "Upravit učitele"
-    button3.addEventListener('click', async () => {
+    const button2 = document.createElement('button')
+    button2.innerText = "Upravit učitele"
+    button2.addEventListener('click', async () => {
         await changeEventAttribute(change.doc, "teachers")
     })
-    const button4 = document.createElement('button')
-    button4.innerText = "Upravit kapacitu"
-    button4.addEventListener('click', async () => {
+    const button3 = document.createElement('button')
+    button3.innerText = "Upravit kapacitu"
+    button3.addEventListener('click', async () => {
         await changeEventAttribute(change.doc, "capacity", true)
+    })
+    const button4 = document.createElement('button')
+    button4.innerText = "Odebrat"
+    button4.classList.add('red')
+    button4.addEventListener('click', async () => {
+        await removeEvent(change.doc.id)
     })
 
     const div = document.createElement('div')
@@ -124,7 +127,7 @@ eventListener.addEventListener('added', ({detail: change}) => {
     div.classList.add('event')
     const buttons = document.createElement('div')
     buttons.classList.add('event-buttons')
-    buttons.append(button, button2, button3, button4)
+    buttons.append(button1, button2, button3, button4)
     div.append(description, buttons)
 
     document.getElementById('events').append(div)
@@ -138,3 +141,29 @@ eventListener.addEventListener('removed', ({ detail: change }) => {
     document.getElementById(`event-${change.doc.id}`).remove()
 })
 
+
+const fileImportEl = document.getElementById('file-import-button')
+fileImportEl.addEventListener('change', async () => {
+    const file = fileImportEl.files[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.addEventListener('load', async () => {
+        const text = reader.result
+        const csvOptions = { separators: [',', ';'] }
+        const { rows } = CSV.parse(text, csvOptions)
+        console.log(rows)
+        await handle(async () => {
+            for (const row of rows) {
+                const [name, teachers, capacity] = row
+                await addEvent(name, teachers, parseInt(capacity))
+            }
+            return "Import byl úspěšně proveden!"
+        })
+        fileImportEl.value = null
+    })
+    reader.addEventListener('error', () => {
+        displayMessage("Chyba při čtení souboru!", '#E75858')
+        fileImportEl.value = null
+    })
+    reader.readAsText(file)
+})

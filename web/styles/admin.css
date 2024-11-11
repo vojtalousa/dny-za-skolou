@@ -3,12 +3,22 @@
     border-radius: 6px;
     font-size: 13px;
     font-weight: 600;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+#login-button {
+    text-align: -webkit-center;
 }
 
 #options-section {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 input[type="text"], input[type="datetime-local"], input[type="number"], input[type="email"] {
@@ -18,19 +28,30 @@ input[type="text"], input[type="datetime-local"], input[type="number"], input[ty
     padding: 0 10px;
 }
 
-label {
-    display: block;
-    margin-bottom: 5px;
-}
-
 form {
     padding: 15px;
 }
 
+.single-input-layout {
+    display: grid;
+    grid-template-rows: min-content 1fr;
+    grid-template-columns: 1fr max-content;
+    gap: 5px;
+}
+.single-input-layout label {
+    grid-column: 1 / 3;
+}
+
 #new-event {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 10px;
+    grid-template-columns: 1fr 1fr 1fr max-content;
+    align-items: end;
+    gap: 5px;
+}
+
+#new-event label {
+    display: block;
+    margin-bottom: 5px;
 }
 
 #new-event input[type="text"], #new-event input[type="number"] {
@@ -42,6 +63,22 @@ form {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    margin-bottom: 15px;
+}
+
+.events-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: end;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.events-header p {
+    font-size: 16px;
+    color: #1C1C1C;
+    font-weight: 700;
 }
 
 .event {
@@ -51,11 +88,67 @@ form {
 }
 
 .event-description {
-    font-size: 18px;
+    font-size: 16px;
+    color: #1C1C1C;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .event-buttons {
-    display: flex;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
+    gap: 5px;
     margin-top: 5px;
+}
+
+#file-import-button {
+    display: none;
+}
+
+.file-import-label {
+    all: unset;
+    display: inline-block;
+    background-color: #3E7BF2;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    padding: 7px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.file-import-label:hover {
+    background-color: #3771e1;
+}
+
+@media (max-width: 535px) {
+    .single-input-layout {
+        display: flex;
+        flex-direction: column;
+    }
+
+    #new-event {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #new-event label {
+        margin-bottom: 2px;
+    }
+
+    #new-event button {
+        margin-top: 2px;
+    }
+
+    .file-import-label {
+        width: 100%;
+    }
+}
+
+@media (max-width: 230px) {
+    .event-buttons {
+        grid-template-columns: 1fr;
+    }
 }
