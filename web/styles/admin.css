@@ -14,7 +14,7 @@
 input[type="text"], input[type="datetime-local"], input[type="number"], input[type="email"] {
     height: 30px;
     border-radius: 7px;
-    border: 1px solid grey;
+    border: 1px solid #d2d2d2;
     padding: 0 10px;
 }
 
@@ -35,4 +35,27 @@ form {
 
 #new-event input[type="text"], #new-event input[type="number"] {
     width: 100%;
+}
+
+#events {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.event {
+    padding: 10px;
+    border: 2px solid #d3d3d3;
+    border-radius: 7px;
+}
+
+.event-description {
+    font-size: 18px;
+}
+
+.event-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 5px;
 }

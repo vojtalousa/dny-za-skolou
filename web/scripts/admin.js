@@ -94,6 +94,7 @@ const eventListener = new FirestoreListener('events')
 eventListener.addEventListener('added', ({detail: change}) => {
     const description = document.createElement('p')
     description.id = `description-${change.doc.id}`
+    description.classList.add('event-description')
     const {name, teachers, capacity, participants} = change.doc.data()
     description.innerText = `${name} (${teachers}) - ${participants.length}/${capacity}`
 
@@ -120,8 +121,9 @@ eventListener.addEventListener('added', ({detail: change}) => {
 
     const div = document.createElement('div')
     div.id = `event-${change.doc.id}`
+    div.classList.add('event')
     const buttons = document.createElement('div')
-    buttons.classList.add('buttons')
+    buttons.classList.add('event-buttons')
     buttons.append(button, button2, button3, button4)
     div.append(description, buttons)
 
