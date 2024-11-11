@@ -25,9 +25,10 @@ Vytvořený pro Dvořákovo gymnázium.
 4. `authDomain` v konfiguraci nastavte na vaši doménu 
 5. V Firebase console aktivujte Authentication a zapněte Google přihlašování 
 6. V nastavení Firebase Authentication autorizujte vaši doménu 
-7. Nastavte redirect z `https://PROJECT_ID.firebaseapp.com/__/auth/` na `/__/auth/` (pro hosting na [Netlify](https://www.netlify.com/) můžete použít `/web/_redirects`)
-8. V Firebase console aktivujte Firestore Database a z dokumentace `/firestore/` doplňte rules 
-9. Ručně vytvořte collection `settings` a oba dokumenty v ní 
-10. Přidejte svůj email do pole admin v `settings/private`
-11. Nahrajte statické soubory z `/web/` na hosting 
-12. Přidejte začátek přihlašování a akce přes webové rozhraní na `/admin`
+7. V [Google Cloud Console](https://console.cloud.google.com/auth/clients) přejděte do sekce `Google Auth Platform`, přidejte vaši doménu jako autorizovanou a ve webovém klientovi ji přidejte jako Javascript origin a redirect URI 
+8. Nastavte redirect z `https://PROJECT_ID.firebaseapp.com/__/auth/` na `/__/auth/` (pro hosting na [Netlify](https://www.netlify.com/) můžete použít `/web/_redirects`)
+9. V Firebase console aktivujte Firestore Database a z dokumentace `/firestore/` doplňte rules 
+10. Ručně vytvořte collection `settings` a oba dokumenty v ní 
+11. Přidejte svůj email do pole `admins` v `settings/private`
+12. Nahrajte statické soubory z `/web/` na hosting 
+13. Přidejte začátek přihlašování a seznam akcí přes webové rozhraní na `/admin`

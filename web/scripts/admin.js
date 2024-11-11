@@ -1,109 +1,96 @@
-import {db, FirestoreListener, getGoogleAuth} from "./global.js";
+import {db, FirestoreListener, getGoogleAuth, displayMessage} from "./global.js";
 import {signInWithPopup} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
 import * as firestore from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
-
-const newEventForm = document.getElementById("new-event")
-newEventForm.onsubmit = async e => {
-    e.preventDefault()
+const handle = async (action, args = []) => {
     try {
-        const ref = firestore.collection(db, "events")
-        await firestore.addDoc(ref, {
-            name: newEventForm.elements["name"].value,
-            teachers: newEventForm.elements["teachers"].value,
-            capacity: parseInt(newEventForm.elements["capacity"].value),
-            participants: []
-        })
-        alert("done")
+        const result = await action(...args)
+        displayMessage(result, '#43BC50')
     } catch (e) {
-        alert(e)
+        displayMessage(e, '#E75858')
     }
 }
 
-const timeSetForm = document.getElementById("set-time")
-timeSetForm.onsubmit = async e => {
-    e.preventDefault()
-    try {
-        const ref = firestore.doc(db, "settings", "public")
-        await firestore.setDoc(ref, {
-            start_time: new Date(timeSetForm.elements["time"].value)
-        })
-        alert("done")
-    } catch (e) {
-        alert(e)
+const addFormHandler = (formId, action) => {
+    const form = document.getElementById(formId)
+    form.onsubmit = async event => {
+        event.preventDefault()
+        await handle(action, [form])
     }
 }
 
-const removeParticipantForm = document.getElementById("remove-participant")
-removeParticipantForm.onsubmit = async e => {
-    e.preventDefault()
-    try {
-        const email = removeParticipantForm.elements["email"].value
-        await firestore.runTransaction(db, async (transaction) => {
-            const userRef = firestore.doc(db, "users", email)
-            const userDoc = await transaction.get(userRef);
-            if (!userDoc.exists()) {
-                throw "User does not exist!";
-            }
+addFormHandler("new-event", async form => {
+    const ref = firestore.collection(db, "events")
+    await firestore.addDoc(ref, {
+        name: form.elements["name"].value,
+        teachers: form.elements["teachers"].value,
+        capacity: parseInt(form.elements["capacity"].value),
+        participants: []
+    })
+    return "Akce byla úspěšně vytvořena!"
+})
+addFormHandler("set-time", async form => {
+    const ref = firestore.doc(db, "settings", "public")
+    await firestore.setDoc(ref, {
+        start_time: new Date(form.elements["time"].value)
+    })
+    return "Čas byl úspěšně nastaven!"
+})
+addFormHandler("remove-participant", async form => {
+    const email = form.elements["email"].value
+    await firestore.runTransaction(db, async transaction => {
+        const userRef = firestore.doc(db, "users", email)
+        const userDoc = await transaction.get(userRef)
+        if (!userDoc.exists()) throw "User does not exist!"
 
-            const eventId = userDoc.data().event_id;
-            const eventRef = firestore.doc(db, "events", eventId)
-            transaction.update(eventRef, {participants: firestore.arrayRemove(email)});
-            transaction.delete(userRef)
-        });
-        alert(`Removed user ${email}`)
-    } catch (e) {
-        alert(e)
-    }
-}
+        const eventId = userDoc.data().event_id
+        const eventRef = firestore.doc(db, "events", eventId)
+        transaction.update(eventRef, {participants: firestore.arrayRemove(email)})
+        transaction.delete(userRef)
+    })
+    return "Účastník byl úspěšně odebrán!"
+})
 
 const {auth, provider} = await getGoogleAuth()
-document.getElementById('login').addEventListener('click', async () => {
-    try {
-        const result = await signInWithPopup(auth, provider);
-        alert(`Logged in as: ${result.user.email}`)
-        document.getElementById('login').style.display = 'none'
-        document.getElementById('logout').style.display = 'block'
-        document.getElementById('options').style.display = 'block'
-    } catch (e) {
-        window.document.innerHTML = e
-    }
-})
-document.getElementById('logout').addEventListener('click', async () => {
+const loginEl = document.getElementById('login')
+loginEl.addEventListener('click', () => handle(async () => {
+    const result = await signInWithPopup(auth, provider);
+    document.getElementById('login').style.display = 'none'
+    document.getElementById('logout').style.display = 'block'
+    document.getElementById('options').style.display = 'block'
+    return `Přihlášen uživatel: ${result.user.email}`
+}))
+const logoutEl = document.getElementById('logout')
+logoutEl.addEventListener('click', () => handle(async () => {
     await auth.signOut()
     document.getElementById('login').style.display = 'block'
     document.getElementById('logout').style.display = 'none'
     document.getElementById('options').style.display = 'none'
+    return "Odhlášení proběhlo úspěšně!"
+}))
+
+const removeEvent = async (id) => handle(async () => {
+    await firestore.runTransaction(db, async (transaction) => {
+        const eventRef = firestore.doc(db, "events", id)
+        const eventDoc = await transaction.get(eventRef);
+
+        const participants = eventDoc.data().participants
+        for (const email of participants) {
+            const userRef = firestore.doc(db, "users", email)
+            transaction.delete(userRef)
+        }
+
+        transaction.delete(eventRef)
+    });
+    return "Akce byla úspěšně odebrána!"
 })
-
-const removeEvent = async (id) => {
-    try {
-        await firestore.runTransaction(db, async (transaction) => {
-            const eventRef = firestore.doc(db, "events", id)
-            const eventDoc = await transaction.get(eventRef);
-
-            const participants = eventDoc.data().participants
-            for (const email of participants) {
-                const userRef = firestore.doc(db, "users", email)
-                transaction.delete(userRef)
-            }
-
-            transaction.delete(eventRef)
-        });
-    } catch (e) {
-        alert(e)
-    }
-}
-const changeEventAttribute = async (doc, attribute, number = false) => {
-    try {
-        const eventRef = firestore.doc(db, "events", doc.id)
-        const newValue = prompt(`Nová hodnota pole "${attribute}":`, doc.data()[attribute])
-        if (!newValue) return
-        await firestore.updateDoc(eventRef, {[attribute]: number ? parseInt(newValue) : newValue})
-    } catch (e) {
-        alert(e)
-    }
-}
+const changeEventAttribute = async (doc, attribute, number = false) => handle(async () => {
+    const eventRef = firestore.doc(db, "events", doc.id)
+    const newValue = prompt(`Nová hodnota pole "${attribute}":`, doc.data()[attribute])
+    if (!newValue) return
+    await firestore.updateDoc(eventRef, {[attribute]: number ? parseInt(newValue) : newValue})
+    return `Pole "${attribute}" bylo úspěšně změněno!`
+})
 
 const eventListener = new FirestoreListener('events')
 eventListener.addEventListener('added', ({detail: change}) => {
