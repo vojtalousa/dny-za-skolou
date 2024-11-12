@@ -105,6 +105,10 @@ form {
     display: none;
 }
 
+#export-file-button {
+    margin-left: auto;
+}
+
 .file-import-label {
     all: unset;
     display: inline-block;
@@ -116,6 +120,8 @@ form {
     border-radius: 6px;
     font-size: 13px;
     font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .file-import-label:hover {
@@ -141,8 +147,14 @@ form {
     #new-event button {
         margin-top: 2px;
     }
+}
 
+@media (max-width: 370px) {
     .file-import-label {
+        width: 100%;
+    }
+
+    #export-file-button {
         width: 100%;
     }
 }

@@ -92,6 +92,50 @@ const changeEventAttribute = async (doc, attribute, number = false) => handle(as
     return `Pole "${attribute}" bylo úspěšně změněno!`
 })
 
+let events = []
+const exportFileEl = document.getElementById('export-file-button')
+exportFileEl.addEventListener('click', async () => {
+    const data = events.flatMap(event => {
+        return event.participants.map(email => [email, event.name])
+    })
+    const csv = `email,akce\n${data.map(line => {
+        return line.map(x => `"${x.trim()}"`).join(',')
+    }).join('\n')}`
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'seznam_ucastniku.csv';
+    a.click();
+})
+
+const fileImportEl = document.getElementById('file-import-button')
+fileImportEl.addEventListener('change', async () => {
+    const file = fileImportEl.files[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.addEventListener('load', async () => {
+        const text = reader.result
+        const csvOptions = { separators: [',', ';'] }
+        const { rows } = CSV.parse(text, csvOptions)
+        console.log(rows)
+        await handle(async () => {
+            for (const row of rows) {
+                const [name, teachers, capacity] = row
+                await addEvent(name, teachers, parseInt(capacity))
+            }
+            return "Import byl úspěšně proveden!"
+        })
+        fileImportEl.value = null
+    })
+    reader.addEventListener('error', () => {
+        displayMessage("Chyba při čtení souboru!", '#E75858')
+        fileImportEl.value = null
+    })
+    reader.readAsText(file)
+})
+
 const eventListener = new FirestoreListener('events')
 eventListener.addEventListener('added', ({detail: change}) => {
     const description = document.createElement('p')
@@ -140,30 +184,6 @@ eventListener.addEventListener('modified', ({detail: change}) => {
 eventListener.addEventListener('removed', ({ detail: change }) => {
     document.getElementById(`event-${change.doc.id}`).remove()
 })
-
-
-const fileImportEl = document.getElementById('file-import-button')
-fileImportEl.addEventListener('change', async () => {
-    const file = fileImportEl.files[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.addEventListener('load', async () => {
-        const text = reader.result
-        const csvOptions = { separators: [',', ';'] }
-        const { rows } = CSV.parse(text, csvOptions)
-        console.log(rows)
-        await handle(async () => {
-            for (const row of rows) {
-                const [name, teachers, capacity] = row
-                await addEvent(name, teachers, parseInt(capacity))
-            }
-            return "Import byl úspěšně proveden!"
-        })
-        fileImportEl.value = null
-    })
-    reader.addEventListener('error', () => {
-        displayMessage("Chyba při čtení souboru!", '#E75858')
-        fileImportEl.value = null
-    })
-    reader.readAsText(file)
+eventListener.addEventListener('change', ({ detail: snapshot }) => {
+    events = snapshot.docs.map(doc => doc.data())
 })
