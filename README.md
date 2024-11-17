@@ -3,7 +3,7 @@ Vytvořený pro Dvořákovo gymnázium.
 
 ## Motivace
 - starý systém přihlašování nezvládal nápor uživatelů
-- alternativní systém přes Google Forms nebyla uživatelsky přívětivý
+- alternativní systém přes Google Forms nebyl uživatelsky přívětivý
 
 ## Řešení
 > od základu systém počítá s velkým náporem v krátkém čase a prakticky nulovým využitím jindy
@@ -23,9 +23,9 @@ Vytvořený pro Dvořákovo gymnázium.
 2. Přidejte ve Firebase webovou aplikaci 
 3. Doplňte [Firebase konfiguraci](https://support.google.com/firebase/answer/7015592#zippy=%2Cin-this-article) v `/web/scripts/config.js`
 4. `authDomain` v konfiguraci nastavte na vaši doménu 
-5. V Firebase console aktivujte Authentication a zapněte Google přihlašování 
+5. Ve Firebase console aktivujte Authentication a zapněte Google přihlašování 
 6. V nastavení Firebase Authentication autorizujte vaši doménu 
-7. V [Google Cloud Console](https://console.cloud.google.com/auth/clients) přejděte do sekce `Google Auth Platform`, přidejte vaši doménu jako autorizovanou a ve webovém klientovi ji přidejte jako Javascript origin a redirect URI 
+7. V [Google Cloud Console](https://console.cloud.google.com/auth/clients) přejděte do sekce `Google Auth Platform`, přidejte vaši doménu jako autorizovanou a v nastavení webového klienta ji přidejte jako Javascript origin a redirect URI 
 8. Nastavte redirect z `https://PROJECT_ID.firebaseapp.com/__/auth/` na `/__/auth/` (pro hosting na [Netlify](https://www.netlify.com/) můžete použít `/web/_redirects`)
 9. V Firebase console aktivujte Firestore Database a z dokumentace `/firestore/` doplňte rules 
 10. Ručně vytvořte collection `settings` a oba dokumenty v ní 

@@ -93,6 +93,7 @@ button .loader {
 
 input[type=radio] {
     all: unset;
+    position: relative;
     cursor: pointer;
     height: 16px;
     width: 16px;
@@ -139,9 +140,12 @@ input[type=radio]:checked:disabled {
 input[type=radio]:checked::before {
     content: '';
     display: block;
+    position: absolute;
     width: 12px;
     height: 12px;
-    margin: calc((16px - 12px) / 2);
+    top: 8px;
+    left: 8px;
+    transform: translate(-6px, -6px);
     background-color: #3E7BF2;
     border-radius: 50%;
 }
