@@ -31,4 +31,4 @@ Vytvořený pro Dvořákovo gymnázium.
 10. Ručně vytvořte collection `settings` a oba dokumenty v ní 
 11. Přidejte svůj email do pole `admins` v `settings/private`
 12. Nahrajte statické soubory z `/web/` na hosting 
-13. Přidejte začátek přihlašování a seznam akcí přes webové rozhraní na `/admin`
+13. Přidejte začátek přihlašování a seznam akcí přes webové rozhraní na `/admin` _(import ze souboru .csv očekává `name,teachers,capacity` jako hlavičku)_

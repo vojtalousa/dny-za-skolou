@@ -14,6 +14,7 @@
 - **Fields:**
     - `email (string)`: email uživatele
     - `event_id (string)`: Document ID akce, na kterou je uživatel přihlášen
+    - `substitute (boolean)`: informace, pokud se uživatel přihlásil až po naplnění akce
 
 **Collection:** `settings`
 - ukládá sdílená nastavení aplikace

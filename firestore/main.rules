@@ -10,6 +10,12 @@ match /databases/{database}/documents {
     function isAdmin() {
     	return request.auth.token.email in get(/databases/$(database)/documents/settings/private).data.admins
     }
+    function signedUpCorrectly() {
+        let eventDocument = getAfter(/databases/$(database)/documents/events/$(request.resource.data.event_id))
+        let signedUp = request.auth.token.email in eventDocument.data.participants
+        let substituteValid = request.resource.data.substitute == (eventDocument.data.participants.size() > eventDocument.data.capacity)
+        return signedUp && substituteValid
+    }
 
   	match /users/{document} {
         allow read, delete: if (isEmailValid() && isAdmin())
@@ -22,10 +28,10 @@ match /databases/{database}/documents {
         allow create: if (
             isEmailValid()
             && document == request.auth.token.email
-        	&& request.resource.data.keys().hasOnly(['email', 'event_id'])
-            && request.resource.data.keys().hasAll(['email', 'event_id'])
+        	&& request.resource.data.keys().hasOnly(['email', 'event_id', 'substitute'])
+            && request.resource.data.keys().hasAll(['email', 'event_id', 'substitute'])
             && request.resource.data.email == request.auth.token.email
-            && request.auth.token.email in getAfter(/databases/$(database)/documents/events/$(request.resource.data.event_id)).data.participants
+            && signedUpCorrectly()
         )
     }
   	match /events/{document} {
@@ -45,15 +51,6 @@ match /databases/{database}/documents {
             && request.time >= get(/databases/$(database)/documents/settings/public).data.start_time
             && !exists(/databases/$(database)/documents/users/$(request.auth.token.email))
         	&& existsAfter(/databases/$(database)/documents/users/$(request.auth.token.email))
-        )
-        allow update: if (
-            isEmailValid()
-        	&& request.resource.data.diff(resource.data).affectedKeys().hasOnly(['participants'])
-      		&& request.resource.data.participants.size() == resource.data.participants.size() - 1
-        	&& resource.data.participants.hasAll(request.resource.data.participants)
-        	&& request.auth.token.email in resource.data.participants
-        	&& !(request.auth.token.email in request.resource.data.participants)
-        	&& !existsAfter(/databases/$(database)/documents/users/$(request.auth.token.email))
         )
   	}
     match /settings {

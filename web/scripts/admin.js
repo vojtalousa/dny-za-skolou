@@ -8,6 +8,7 @@ const handle = async (action, args = []) => {
         const result = await action(...args)
         displayMessage(result, '#43BC50')
     } catch (e) {
+        console.error(e)
         displayMessage(e, '#E75858')
     }
 }
@@ -38,28 +39,28 @@ const addFormHandler = (formId, action) => {
 
 const addEvent = async (name, teachers, capacity) => {
     const ref = firestore.collection(db, "events")
-    await firestore.addDoc(ref, { name, teachers, capacity, participants: [] })
+    await firestore.addDoc(ref, {name, teachers, capacity, participants: []})
     return "Akce byla úspěšně vytvořena!"
 }
 addFormHandler("new-event", async form => {
-    const name = form.elements["name"].value
-    const teachers = form.elements["teachers"].value
-    const capacity = parseInt(form.elements["capacity"].value)
+    const name = form.elements.name.value
+    const teachers = form.elements.teachers.value
+    const capacity = parseInt(form.elements.capacity.value, 10)
     return await addEvent(name, teachers, capacity)
 })
 addFormHandler("set-time", async form => {
     const ref = firestore.doc(db, "settings", "public")
     await firestore.setDoc(ref, {
-        start_time: new Date(form.elements["time"].value)
+        start_time: new Date(form.elements.time.value)
     })
     return "Čas byl úspěšně nastaven!"
 })
 addFormHandler("remove-participant", async form => {
-    const email = form.elements["email"].value
+    const email = form.elements.email.value
     await firestore.runTransaction(db, async transaction => {
         const userRef = firestore.doc(db, "users", email)
         const userDoc = await transaction.get(userRef)
-        if (!userDoc.exists()) throw "User does not exist!"
+        if (!userDoc.exists()) throw new Error("User does not exist!")
 
         const eventId = userDoc.data().event_id
         const eventRef = firestore.doc(db, "events", eventId)
@@ -87,8 +88,8 @@ const removeEvent = async (id) => handle(async () => {
 const changeEventAttribute = async (doc, attribute, number = false) => handle(async () => {
     const eventRef = firestore.doc(db, "events", doc.id)
     const newValue = prompt(`Nová hodnota pole "${attribute}":`, doc.data()[attribute])
-    if (!newValue) return
-    await firestore.updateDoc(eventRef, {[attribute]: number ? parseInt(newValue) : newValue})
+    if (!newValue) return `Změna zrušena`
+    await firestore.updateDoc(eventRef, {[attribute]: number ? parseInt(newValue, 10) : newValue})
     return `Pole "${attribute}" bylo úspěšně změněno!`
 })
 
@@ -102,7 +103,7 @@ exportFileEl.addEventListener('click', async () => {
         return line.map(x => `"${x.trim()}"`).join(',')
     }).join('\n')}`
 
-    const blob = new Blob([csv], { type: 'text/csv' });
+    const blob = new Blob([csv], {type: 'text/csv'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -117,16 +118,22 @@ fileImportEl.addEventListener('change', async () => {
     const reader = new FileReader()
     reader.addEventListener('load', async () => {
         const text = reader.result
-        const csvOptions = { separators: [',', ';'] }
-        const { rows } = CSV.parse(text, csvOptions)
-        console.log(rows)
-        await handle(async () => {
-            for (const row of rows) {
-                const [name, teachers, capacity] = row
-                await addEvent(name, teachers, parseInt(capacity))
-            }
-            return "Import byl úspěšně proveden!"
-        })
+        const csvOptions = {separators: [',', ';']}
+        const parsed = CSV.parse(text, csvOptions)
+        if (['name', 'teachers', 'capacity'].some(x => !parsed.header.includes(x))) {
+            displayMessage(`Hlavička csv musí být "name,teachers,capacity", v souboru byla "${parsed.header}"`)
+        } else {
+            await handle(async () => {
+                for (const row of parsed.mappedRows) {
+                    const {name, teachers, capacity} = row
+                    if (!name || !teachers || !capacity || Number.isNaN(parseInt(capacity, 10))) {
+                        throw new Error('Chybějící informace v csv!')
+                    }
+                    await addEvent(name, teachers, parseInt(capacity, 10))
+                }
+                return "Import byl úspěšně proveden!"
+            })
+        }
         fileImportEl.value = null
     })
     reader.addEventListener('error', () => {
@@ -181,9 +188,9 @@ eventListener.addEventListener('modified', ({detail: change}) => {
     const {name, teachers, capacity, participants} = change.doc.data()
     label.innerText = `${name} (${teachers}) - ${participants.length}/${capacity}`
 })
-eventListener.addEventListener('removed', ({ detail: change }) => {
+eventListener.addEventListener('removed', ({detail: change}) => {
     document.getElementById(`event-${change.doc.id}`).remove()
 })
-eventListener.addEventListener('change', ({ detail: snapshot }) => {
+eventListener.addEventListener('change', ({detail: snapshot}) => {
     events = snapshot.docs.map(doc => doc.data())
 })

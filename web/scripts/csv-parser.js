@@ -7,11 +7,11 @@ export default (() => {
             const maxSingleChar = (element) => typeof element === "string" && element.length <= 1;
 
             return (object) => {
-                if(typeof object === "string"){
+                if (typeof object === "string") {
                     return Array.from(object);
                 }
 
-                if(Array.isArray(object)){
+                if (Array.isArray(object)) {
                     return object.filter(maxSingleChar);
                 }
 
@@ -23,21 +23,21 @@ export default (() => {
         strictLineBreakGroups = /\r\n|\r/gu,
         looseLineBreakGroups = /\r\n|\n\r|\r/gu,
         reduceClass = (characterClasses) => {
-            if(characterClasses.length === 1){
+            if (characterClasses.length === 1) {
                 return characterClasses[0];
             }
 
-            if(characterClasses.includes("space")){
-                if(characterClasses.includes("quote") && !characterClasses.includes("separator")){
+            if (characterClasses.includes("space")) {
+                if (characterClasses.includes("quote") && !characterClasses.includes("separator")) {
                     return "quote";
                 }
 
-                if(!characterClasses.includes("quote") && characterClasses.includes("separator")){
+                if (!characterClasses.includes("quote") && characterClasses.includes("separator")) {
                     return "separator";
                 }
             }
 
-            if(characterClasses.includes("quote") && characterClasses.includes("separator")){
+            if (characterClasses.includes("quote") && characterClasses.includes("separator")) {
                 return "quoteSeparator";
             }
 
@@ -88,8 +88,8 @@ export default (() => {
             };
 
             return (parserState, reducedClass) => {
-                if(parserState === "empty"){
-                    if(reducedClass === "lineFeed"){
+                if (parserState === "empty") {
+                    if (reducedClass === "lineFeed") {
                         return "discarded";
                     }
 
@@ -103,7 +103,7 @@ export default (() => {
             parseSubArrays
         } = (() => {
             // From <https://github.com/benjamingr/RegExp.escape/blob/master/polyfill.js>.
-            if(!Object.hasOwn(RegExp, "escape")){
+            if (!Object.hasOwn(RegExp, "escape")) {
                 const replacedChars = /[\\^$*+?.()|[\]{}]/gu;
 
                 Object.defineProperty(RegExp, "escape", {
@@ -111,7 +111,7 @@ export default (() => {
                     enumerable: false,
                     writable: true,
                     value: Object.freeze({
-                        escape(string){
+                        escape(string) {
                             return String(string).replace(replacedChars, "\\$&");
                         }
                     }).escape
@@ -121,7 +121,7 @@ export default (() => {
             const {
                 parseString
             } = {
-                parseString(string){
+                parseString(string) {
                     const {
                             quote,
                             ignoreSpacesAfterQuotedString
@@ -130,7 +130,7 @@ export default (() => {
                         spaceQuotes = /^ (.*) $/su,
                         escapedQuotes = new RegExp(`(${RegExp.escape(quote)})\\1`, "g");
 
-                    if(quote !== space && surroundedQuotes.test(string)){
+                    if (quote !== space && surroundedQuotes.test(string)) {
                         const spacesAfterQuotedString = ignoreSpacesAfterQuotedString
                             ? ""
                             : "$2";
@@ -140,7 +140,7 @@ export default (() => {
                             .replace(escapedQuotes, "$1");
                     }
 
-                    if(quote === space && spaceQuotes.test(string)){
+                    if (quote === space && spaceQuotes.test(string)) {
                         return string
                             .replace(spaceQuotes, "$1")
                             .replace(escapedQuotes, "$1");
@@ -151,7 +151,7 @@ export default (() => {
             };
 
             return {
-                parseSubArrays(subArray){
+                parseSubArrays(subArray) {
                     return subArray.map(parseString, this);
                 }
             };
@@ -159,24 +159,23 @@ export default (() => {
         classifyCharacter = (character, quote, separators) => {
             const characterClasses = [];
 
-            if(character === "\n"){
+            if (character === "\n") {
                 characterClasses.push("lineFeed");
-            }
-            else{
-                if(character === quote){
+            } else {
+                if (character === quote) {
                     characterClasses.push("quote");
                 }
 
-                if(separators.includes(character)){
+                if (separators.includes(character)) {
                     characterClasses.push("separator");
                 }
 
-                if(character === space){
+                if (character === space) {
                     characterClasses.push("space");
                 }
             }
 
-            if(characterClasses.length === 0){
+            if (characterClasses.length === 0) {
                 characterClasses.push("other");
             }
 
@@ -188,7 +187,7 @@ export default (() => {
             lastLine[lastLine.length - 1] += character;
         },
         discardCell = (aggregator) => {
-            if(aggregator.array.at(-1).length > 1){
+            if (aggregator.array.at(-1).length > 1) {
                 aggregator.array.at(-1).pop();
             }
 
@@ -196,10 +195,9 @@ export default (() => {
             aggregator.lineTaint = "none";
         },
         endCell = (aggregator, characterClasses) => {
-            if(characterClasses.includes("separator")){
+            if (characterClasses.includes("separator")) {
                 aggregator.array.at(-1).push("");
-            }
-            else if(characterClasses.includes("lineFeed")){
+            } else if (characterClasses.includes("lineFeed")) {
                 aggregator.array.push([
                     ""
                 ]);
@@ -209,10 +207,9 @@ export default (() => {
             aggregator.parserState = "empty";
         },
         lineTaintActivation = (aggregator, reducedClass) => {
-            if(reducedClass === "quoteSeparator"){
+            if (reducedClass === "quoteSeparator") {
                 aggregator.lineTaint = "active";
-            }
-            else if(reducedClass === "separator"){
+            } else if (reducedClass === "separator") {
                 aggregator.lineTaint = "inactive";
             }
         },
@@ -221,20 +218,18 @@ export default (() => {
                 reducedClass = reduceClass(characterClasses);
             let nextState = transition(aggregator.parserState, reducedClass);
 
-            if(aggregator.taintQuoteSeparatorLines){
-                if(nextState === "finished" && reducedClass !== "lineFeed" && (aggregator.parserState === "closed" || aggregator.parserState === "waiting")){
+            if (aggregator.taintQuoteSeparatorLines) {
+                if (nextState === "finished" && reducedClass !== "lineFeed" && (aggregator.parserState === "closed" || aggregator.parserState === "waiting")) {
                     lineTaintActivation(aggregator, reducedClass);
-                }
-                else if(nextState === "finished" || nextState === "discarded"){
-                    if(reducedClass === "lineFeed"){
+                } else if (nextState === "finished" || nextState === "discarded") {
+                    if (reducedClass === "lineFeed") {
                         aggregator.lineTaint = "none";
-                    }
-                    else if(aggregator.lineTaint !== "none"){
+                    } else if (aggregator.lineTaint !== "none") {
                         lineTaintActivation(aggregator, reducedClass);
                     }
                 }
 
-                if(reducedClass === "lineFeed" && nextState === "open" && aggregator.lineTaint === "active"){
+                if (reducedClass === "lineFeed" && nextState === "open" && aggregator.lineTaint === "active") {
                     consume(aggregator, aggregator.quote);
                     nextState = "finished";
                     aggregator.lineTaint = "none";
@@ -243,20 +238,18 @@ export default (() => {
 
             aggregator.parserState = nextState;
 
-            if(aggregator.parserState === "discarded"){
+            if (aggregator.parserState === "discarded") {
                 discardCell(aggregator);
             }
 
-            if(index !== string.length - 1){
-                if(aggregator.parserState === "finished"){
+            if (index !== string.length - 1) {
+                if (aggregator.parserState === "finished") {
                     endCell(aggregator, characterClasses);
-                }
-                else{
+                } else {
                     consume(aggregator, character);
                 }
-            }
-            else if(aggregator.parserState === "open"){
-                if(!aggregator.ignoreLineFeedBeforeEOF){
+            } else if (aggregator.parserState === "open") {
+                if (!aggregator.ignoreLineFeedBeforeEOF) {
                     consume(aggregator, character);
                 }
 
@@ -265,7 +258,7 @@ export default (() => {
 
             return aggregator;
         },
-        getLength = ({ length }) => length,
+        getLength = ({length}) => length,
         {
             toHashMap,
             mapHeaderKeys,
@@ -273,22 +266,22 @@ export default (() => {
             quoteString,
             toCSVLine
         } = {
-            toHashMap(row){
+            toHashMap(row) {
                 return row.reduce((hashMap, cell, index) => {
                     hashMap[this[index]] = cell;
 
                     return hashMap;
                 }, {});
             },
-            mapHeaderKeys(key){
+            mapHeaderKeys(key) {
                 return (Object.hasOwn(this, key)
                     ? this[key]
                     : "");
             },
-            toRows(map){
+            toRows(map) {
                 return this.map(mapHeaderKeys, map);
             },
-            quoteString(cell){
+            quoteString(cell) {
                 cell = String(cell);
 
                 const {
@@ -297,13 +290,13 @@ export default (() => {
                     } = this,
                     quotedContent = cell.replaceAll(quote, quote.repeat(2));
 
-                if(cell.includes("\n") || cell.includes(quote) || cell.includes(separator)){
+                if (cell.includes("\n") || cell.includes(quote) || cell.includes(separator)) {
                     return `${quote}${quotedContent}${quote}`;
                 }
 
                 return cell;
             },
-            toCSVLine(line){
+            toCSVLine(line) {
                 const {
                     separator,
                     maxCellCount
@@ -316,7 +309,14 @@ export default (() => {
         };
 
     return {
-        parse(csv, { quote = "\"", separators = [ "," ], forceLineFeedAfterCarriageReturn = true, ignoreLineFeedBeforeEOF = true, ignoreSpacesAfterQuotedString = true, taintQuoteSeparatorLines = false } = {}){
+        parse(csv, {
+            quote = "\"",
+            separators = [","],
+            forceLineFeedAfterCarriageReturn = true,
+            ignoreLineFeedBeforeEOF = true,
+            ignoreSpacesAfterQuotedString = true,
+            taintQuoteSeparatorLines = false
+        } = {}) {
             csv = csv.replace((forceLineFeedAfterCarriageReturn
                 ? strictLineBreakGroups
                 : looseLineBreakGroups), "\n");
@@ -355,7 +355,13 @@ export default (() => {
                 mappedRows: rows.map(toHashMap, header)
             };
         },
-        stringify(object, { quote = "\"", separator = ",", lineEnd = "\n", trimEmpty = true, lineEndBeforeEOF = false } = {}){
+        stringify(object, {
+            quote = "\"",
+            separator = ",",
+            lineEnd = "\n",
+            trimEmpty = true,
+            lineEndBeforeEOF = false
+        } = {}) {
             let header = [],
                 rows = [],
                 mappedRows = [];
@@ -366,13 +372,12 @@ export default (() => {
                 ? lineEnd
                 : "\n");
 
-            if(Array.isArray(object)){
+            if (Array.isArray(object)) {
                 [
                     header,
                     ...rows
                 ] = object;
-            }
-            else{
+            } else {
                 ({
                     header: [
                         ...header
@@ -385,7 +390,7 @@ export default (() => {
                     ] = []
                 } = object);
 
-                if(rows.length === 0 && mappedRows.length > 0){
+                if (rows.length === 0 && mappedRows.length > 0) {
                     rows = mappedRows.map(toRows, header);
                 }
             }
@@ -398,12 +403,12 @@ export default (() => {
                     length: Math.max(...allRows.map(getLength))
                 };
 
-            if(trimEmpty){
-                while(allRows.length > 0 && allRows.at(-1).every((string) => string.length === 0)){
+            if (trimEmpty) {
+                while (allRows.length > 0 && allRows.at(-1).every((string) => string.length === 0)) {
                     allRows.pop();
                 }
 
-                while(maxCellCount.length >= 0 && allRows.every((row) => !row[maxCellCount.length - 1] || row[maxCellCount.length - 1].length === 0)){
+                while (maxCellCount.length >= 0 && allRows.every((row) => !row[maxCellCount.length - 1] || row[maxCellCount.length - 1].length === 0)) {
                     allRows.forEach((row) => row.splice(maxCellCount.length - 1, 1));
                     --maxCellCount.length;
                 }

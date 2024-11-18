@@ -18,7 +18,6 @@ const formEventsGroupEl = document.getElementById('form-fieldset')
 const formSignupButtonEl = document.getElementById('form-signup-button')
 const formButtonLoaderEl = document.getElementById('form-button-loader')
 const formButtonTextEl = document.getElementById('form-button-text')
-const formSignoutButtonEl = document.getElementById('form-signout-button')
 
 let allParticipants = []
 let formSectionVisible = false
@@ -83,7 +82,7 @@ const startCountdown = (signupStart) => {
     }, 1000 - new Date().getMilliseconds())
 }
 
-const { auth, provider } = await getGoogleAuth()
+const {auth, provider} = await getGoogleAuth()
 loginButtonEl.addEventListener('click', async () => {
     try {
         loginButtonLoaderEl.style.display = "inline-block"
@@ -138,7 +137,7 @@ const setLabelValue = (label, radio, doc) => {
     label.querySelector('.event-availability').textContent = availability
     label.querySelector('.event-availability').style.backgroundColor = availabilityColor
     label.querySelector('.event-teachers').textContent = teachers
-    const full = occupied >= capacity
+    const full = occupied >= capacity + 10
     radio.disabled = full
     if (full) radio.checked = false
 }
@@ -146,10 +145,10 @@ const setLabelValue = (label, radio, doc) => {
 const eventListener = new FirestoreListener('events')
 eventListener.addEventListener('change', () => {
     document.getElementById('form-loader').style.display = 'none'
-}, { once: true })
+}, {once: true})
 eventListener.addEventListener('change', ({detail: snapshot}) => {
     allParticipants = snapshot.docs.reduce((acc, doc) => acc.concat(doc.data().participants.map(email => {
-        return { email, event_id: doc.id }
+        return {email, event_id: doc.id}
     })), [])
 
     const loggedIn = auth.currentUser?.email
@@ -200,8 +199,8 @@ const signupForEvent = async (email, event_id) => {
     const userRef = firestore.doc(db, 'users', email)
     const eventRef = firestore.doc(db, 'events', event_id)
 
-    batch.set(userRef, { email, event_id })
-    batch.update(eventRef, { participants: firestore.arrayUnion(email) })
+    batch.set(userRef, {email, event_id})
+    batch.update(eventRef, {participants: firestore.arrayUnion(email)})
     await batch.commit();
 }
 
@@ -220,7 +219,7 @@ signupForm.onsubmit = async (e) => {
         formButtonLoaderEl.style.display = "inline-block"
         formButtonTextEl.style.display = "none"
         await signupForEvent(email, event_id)
-        
+
         displayMessage(`Zapsáno na "${event_name}"!`, '#43BC50', true)
         alreadySignedUpDisplayed = true
         disableOtherEvents(event_id)
@@ -232,25 +231,3 @@ signupForm.onsubmit = async (e) => {
     formButtonLoaderEl.style.display = "none"
     formButtonTextEl.style.display = "inline"
 }
-
-// formSignoutButtonEl.addEventListener('click', async () => {
-//     try {
-//         const email = auth.currentUser?.email
-//         if (!email) return displayMessage('Nejste přihlášení!')
-//         await firestore.runTransaction(db, async (transaction) => {
-//             const userRef = firestore.doc(db, "users", email);
-//             const userDoc = await transaction.get(userRef);
-//             if (!userDoc.exists()) {
-//                 throw "User does not exist!";
-//             }
-//
-//             const eventId = userDoc.data().event_id;
-//             const eventRef = firestore.doc(db, "events", eventId)
-//             transaction.update(eventRef, { participants: firestore.arrayRemove(email) });
-//             transaction.delete(userRef)
-//         });
-//     } catch (e) {
-//         console.error('Error signing out:', e)
-//         displayMessage('Nepodařilo se odhlásit!')
-//     }
-// })
