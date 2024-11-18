@@ -57,6 +57,14 @@ button .loader {
     font-size: 85px;
     margin-bottom: 5px;
 }
+.countdown-description {
+    display: block;
+    font-size: 35px;
+    color: #454545;
+}
+.countdown-start {
+    font-size: 60px;
+}
 
 .waiting-description {
     max-width: 650px
@@ -230,6 +238,12 @@ noscript {
 @media screen and (max-width: 800px) {
     #countdown {
         font-size: 40px;
+    }
+    .countdown-description {
+        font-size: 20px;
+    }
+    .countdown-start {
+        font-size: 35px;
     }
 
     .event-name {

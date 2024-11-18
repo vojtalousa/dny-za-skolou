@@ -57,13 +57,17 @@ const startCountdown = (signupStart) => {
         const hours = Math.floor((diff % 86400000) / 3600000);
         const minutes = Math.floor((diff % 3600000) / 60000);
         const seconds = Math.floor((diff % 60000) / 1000);
-        if (diff > 86400000) return 'Přihlašování začne za více než 24 hodin'
-        return `${hours ? `${pad(hours)}:` : ''}${pad(minutes)}:${pad(seconds)}`
+        if (diff <= 86400000) return `${hours ? `${pad(hours)}:` : ''}${pad(minutes)}:${pad(seconds)}`
+        else {
+            const dateFormatOptions = { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: 'numeric' }
+            const formatted = signupStart.toLocaleString('cs-CZ', dateFormatOptions)
+            return `<span class="countdown-description">Přihlašování se spustí v:</span><span class="countdown-start">${formatted}</span>`
+        }
     }
-    countdownEl.textContent = getTimeUntilStart()
+    countdownEl.innerHTML = getTimeUntilStart()
 
     setTimeout(() => {
-        countdownEl.textContent = getTimeUntilStart()
+        countdownEl.innerHTML = getTimeUntilStart()
         const interval = setInterval(() => {
             const diff = signupStart - new Date()
             if (diff <= 0) {
@@ -77,7 +81,7 @@ const startCountdown = (signupStart) => {
                     alreadySignedUpCheck(auth.currentUser.email)
                 }
             }
-            countdownEl.textContent = getTimeUntilStart()
+            countdownEl.innerHTML = getTimeUntilStart()
         }, 1000)
     }, 1000 - new Date().getMilliseconds())
 }
