@@ -61,6 +61,7 @@ button .loader {
     display: block;
     font-size: 35px;
     color: #454545;
+    margin-bottom: -15px;
 }
 .countdown-start {
     font-size: 60px;
@@ -241,6 +242,7 @@ noscript {
     }
     .countdown-description {
         font-size: 20px;
+        margin-bottom: -5px;
     }
     .countdown-start {
         font-size: 35px;
