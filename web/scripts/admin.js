@@ -95,12 +95,15 @@ const changeEventAttribute = async (doc, attribute, number = false) => handle(as
 
 let events = []
 const exportFileEl = document.getElementById('export-file-button')
-exportFileEl.addEventListener('click', async () => {
-    const data = events.flatMap(event => {
-        return event.participants.map(email => [email, event.name])
+exportFileEl.addEventListener('click', () => handle(async () => {
+    const usersSnapshot = await firestore.getDocs(firestore.collection(db, 'users'))
+    const users = usersSnapshot.docs.map(x => x.data())
+    const data = users.map(({ email, event_id, substitute }) => {
+        const eventName = events.find(x => x.id === event_id).name
+        return [email, eventName, substitute]
     })
-    const csv = `email,akce\n${data.map(line => {
-        return line.map(x => `"${x.trim()}"`).join(',')
+    const csv = `email,akce,nahradnik\n${data.map(line => {
+        return line.map(x => `"${x.toString().trim()}"`).join(',')
     }).join('\n')}`
 
     const blob = new Blob([csv], {type: 'text/csv'});
@@ -109,7 +112,8 @@ exportFileEl.addEventListener('click', async () => {
     a.href = url;
     a.download = 'seznam_ucastniku.csv';
     a.click();
-})
+    return 'Seznam účastníků byl úspěšně exportován'
+}))
 
 const fileImportEl = document.getElementById('file-import-button')
 fileImportEl.addEventListener('change', async () => {
@@ -192,5 +196,5 @@ eventListener.addEventListener('removed', ({detail: change}) => {
     document.getElementById(`event-${change.doc.id}`).remove()
 })
 eventListener.addEventListener('change', ({detail: snapshot}) => {
-    events = snapshot.docs.map(doc => doc.data())
+    events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
 })

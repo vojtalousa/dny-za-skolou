@@ -11,9 +11,9 @@ match /databases/{database}/documents {
     	return request.auth.token.email in get(/databases/$(database)/documents/settings/private).data.admins
     }
     function signedUpCorrectly() {
-        let eventDocument = getAfter(/databases/$(database)/documents/events/$(request.resource.data.event_id))
-        let signedUp = request.auth.token.email in eventDocument.data.participants
-        let substituteValid = request.resource.data.substitute == (eventDocument.data.participants.size() > eventDocument.data.capacity)
+        let eventDocument = getAfter(/databases/$(database)/documents/events/$(request.resource.data.event_id));
+        let signedUp = request.auth.token.email in eventDocument.data.participants;
+        let substituteValid = request.resource.data.substitute == (eventDocument.data.participants.size() > eventDocument.data.capacity);
         return signedUp && substituteValid
     }
 
@@ -46,7 +46,7 @@ match /databases/{database}/documents {
                 || resource.data.participants == request.resource.data.participants[0:resource.data.participants.size()]
             )
         	&& request.resource.data.participants[request.resource.data.participants.size() - 1] == request.auth.token.email
-        	&& request.resource.data.participants.size() <= resource.data.capacity
+        	&& request.resource.data.participants.size() <= resource.data.capacity + 10
             && !(request.auth.token.email in resource.data.participants)
             && request.time >= get(/databases/$(database)/documents/settings/public).data.start_time
             && !exists(/databases/$(database)/documents/users/$(request.auth.token.email))

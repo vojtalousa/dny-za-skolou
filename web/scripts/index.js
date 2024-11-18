@@ -132,14 +132,24 @@ const setLabelValue = (label, radio, doc) => {
     const capacity = doc.data().capacity
     const teachers = doc.data().teachers
     const availability = `${occupied}/${capacity}`
-    const availabilityColor = `hsl(${126 - Math.round(126 * (occupied / capacity))}, 57%, 61%)`
+    const hue = Math.max(126 - Math.round(126 * (occupied / capacity)), 0)
+    const availabilityColor = `hsl(${hue}, 57%, 61%)`
     label.querySelector('.event-name').textContent = doc.data().name
     label.querySelector('.event-availability').textContent = availability
     label.querySelector('.event-availability').style.backgroundColor = availabilityColor
     label.querySelector('.event-teachers').textContent = teachers
-    const full = occupied >= capacity + 10
-    radio.disabled = full
-    if (full) radio.checked = false
+
+    const full = occupied >= capacity
+    const parent = radio.parentElement
+    if (full) parent.classList.add('filled')
+    else parent.classList.remove('filled')
+
+    const disable = occupied >= capacity + 10
+    radio.disabled = disable
+    if (disable) {
+        parent.classList.remove('filled')
+        radio.checked = false
+    }
 }
 
 const eventListener = new FirestoreListener('events')
@@ -173,7 +183,6 @@ eventListener.addEventListener('added', ({detail: change}) => {
     const teachersSpan = document.createElement('span')
     teachersSpan.className = 'event-teachers stop-overflow'
     label.append(nameSpan, availabilitySpan, teachersSpan)
-    setLabelValue(label, radio, change.doc)
 
     const div = document.createElement('div')
     div.id = `event-${change.doc.id}`
@@ -181,6 +190,7 @@ eventListener.addEventListener('added', ({detail: change}) => {
     div.append(radio, label)
 
     formEventsGroupEl.append(div)
+    setLabelValue(label, radio, change.doc)
     console.log('Added event: ', change.doc.data());
 })
 eventListener.addEventListener('modified', ({detail: change}) => {
@@ -194,21 +204,37 @@ eventListener.addEventListener('removed', ({detail: change}) => {
     console.log('Removed event: ', change.doc.data());
 })
 
-const signupForEvent = async (email, event_id) => {
+const signupForEvent = async (email, event_id, substitute) => {
     const batch = firestore.writeBatch(db);
     const userRef = firestore.doc(db, 'users', email)
     const eventRef = firestore.doc(db, 'events', event_id)
 
-    batch.set(userRef, {email, event_id})
+    batch.set(userRef, {email, event_id, substitute})
     batch.update(eventRef, {participants: firestore.arrayUnion(email)})
     await batch.commit();
 }
 
 const signupForm = document.getElementById('signup-form')
-signupForm.onsubmit = async (e) => {
-    e.preventDefault()
+const getEventFromForm = () => {
     const event_id = signupForm.elements.event.value
     const event_name = document.querySelector(`#label-${event_id} > .event-name`).textContent
+    const eventParent = document.getElementById(`event-${event_id}`)
+    const substitute = eventParent.classList.contains('filled')
+    return { event_id, event_name, substitute }
+}
+signupForm.oninput = () => {
+    const { substitute } = getEventFromForm()
+    if (substitute) {
+        formButtonTextEl.innerText = `Zapsat se jako NÁHRADNÍK`
+        formSignupButtonEl.classList.add('red')
+    } else {
+        formButtonTextEl.innerText = 'Zapsat se'
+        formSignupButtonEl.classList.remove('red')
+    }
+}
+signupForm.onsubmit = async (e) => {
+    e.preventDefault()
+    const { event_id, event_name, substitute } = getEventFromForm()
     const email = auth.currentUser?.email
     if (!email) return displayMessage('Nejste přihlášení!')
     if (!event_id) return displayMessage('Není vybraná žádná akce!')
@@ -218,7 +244,7 @@ signupForm.onsubmit = async (e) => {
     try {
         formButtonLoaderEl.style.display = "inline-block"
         formButtonTextEl.style.display = "none"
-        await signupForEvent(email, event_id)
+        await signupForEvent(email, event_id, substitute)
 
         displayMessage(`Zapsáno na "${event_name}"!`, '#43BC50', true)
         alreadySignedUpDisplayed = true

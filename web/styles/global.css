@@ -52,7 +52,7 @@ button:hover {
 .red {
     background-color: #E75858;
 }
-button.red:hover {
+button.red:not(:disabled):hover {
     background-color: #D94A4A;
 }
 
