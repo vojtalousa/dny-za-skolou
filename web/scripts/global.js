@@ -58,10 +58,10 @@ export class FirestoreListener extends EventTarget {
         this.collection = collection
         this.query = firestore.query(firestore.collection(db, collection));
         firestore.onSnapshot(this.query, (snapshot) => {
+            this.dispatchEvent(new CustomEvent('change', {detail: snapshot}))
             snapshot.docChanges().forEach((change) => {
                 this.dispatchEvent(new CustomEvent(change.type, {detail: change}))
             })
-            this.dispatchEvent(new CustomEvent('change', {detail: snapshot}))
         })
     }
 }

@@ -2,7 +2,10 @@ import * as firestore from "https://www.gstatic.com/firebasejs/10.12.4/firebase-
 import {db, FirestoreListener, getGoogleAuth, closeMessage, displayMessage} from "./global.js";
 import {signInWithPopup} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
 
-const signupStartPromise = firestore.getDoc(firestore.doc(db, 'settings', 'public'))
+const urlParams = new URLSearchParams(window.location.search);
+const overrideStartTime = Boolean(urlParams.get('force-start'))
+const settingsRef = firestore.doc(db, 'settings', 'public')
+const signupStartPromise = overrideStartTime ? new Date(Date.now() - 1000) : firestore.getDoc(settingsRef)
     .then(doc => doc.data().start_time.toDate())
     .catch(() => displayMessage('Chyba při načítání dat, obnovte prosím stránku!', '#E75858', true))
 
@@ -22,6 +25,7 @@ const formButtonTextEl = document.getElementById('form-button-text')
 let allParticipants = []
 let formSectionVisible = false
 let alreadySignedUpDisplayed = false
+let signedUp = {}
 
 const disableOtherEvents = (id) => {
     formEventsGroupEl.disabled = true
@@ -33,21 +37,21 @@ const setDefaultAvailability = () => {
     formSignupButtonEl.disabled = false
 }
 
-let preventSubstituteIcon
 const alreadySignedUpCheck = (email) => {
     const participantData = allParticipants.find(participant => participant.email === email)
     if (participantData) {
         disableOtherEvents(participantData.event_id)
+        signedUp = { id: participantData.event_id, substitute: participantData.substitute }
         if (!alreadySignedUpDisplayed) {
             const substituteMessage = participantData.substitute ? ' (jako NÁHRADNÍK)' : ''
-            if (!participantData.substitute) {
-                preventSubstituteIcon = participantData.event_id
-                document.getElementById(`event-${participantData.event_id}`).classList.remove('filled')
-            }
+            const eventEl = document.getElementById(`event-${participantData.event_id}`)
+            if (participantData.substitute) eventEl.classList.add('filled')
+            else eventEl.classList.remove('filled')
             displayMessage(`Už jste zapsaní!${substituteMessage}`, '#3E7BF2', true)
             alreadySignedUpDisplayed = true
         }
     } else {
+        signedUp = {}
         setDefaultAvailability()
         if (alreadySignedUpDisplayed) {
             closeMessage()
@@ -59,7 +63,7 @@ const alreadySignedUpCheck = (email) => {
 const startCountdown = (signupStart) => {
     const getTimeUntilStart = () => {
         const pad = (num) => num.toString().padStart(2, '0')
-        const diff = signupStart - new Date() + 1000
+        const diff = Math.round((signupStart - new Date()) / 1000) * 1000 + 1000
         const hours = Math.floor((diff % 86400000) / 3600000);
         const minutes = Math.floor((diff % 3600000) / 60000);
         const seconds = Math.floor((diff % 60000) / 1000);
@@ -149,15 +153,47 @@ const setLabelValue = (label, radio, doc) => {
     label.querySelector('.event-teachers').textContent = teachers
 
     const full = occupied >= capacity
-    const parent = radio.parentElement
-    if (full && preventSubstituteIcon !== doc.id) parent.classList.add('filled')
-    else parent.classList.remove('filled')
-
     const disable = occupied >= capacity + 10
-    radio.disabled = disable
-    if (disable) {
-        parent.classList.remove('filled')
-        radio.checked = false
+    const parent = radio.parentElement
+
+    if (signedUp.id === doc.id) {
+        if (signedUp.substitute) parent.classList.add('filled')
+        else parent.classList.remove('filled')
+        radio.disabled = false
+        radio.checked = true
+    } else {
+        if (disable) {
+            parent.classList.remove('filled')
+            radio.disabled = true
+            radio.checked = false
+        } else if (full) {
+            parent.classList.add('filled')
+            radio.disabled = false
+        } else {
+            parent.classList.remove('filled')
+            radio.disabled = false
+        }
+    }
+}
+
+const signupForm = document.getElementById('signup-form')
+const getEventFromForm = () => {
+    const event_id = signupForm.elements.event.value
+    if (!event_id) return { event_id: null, event_name: null, substitute: null }
+
+    const event_name = document.querySelector(`#label-${event_id} > .event-name`).textContent
+    const eventParent = document.getElementById(`event-${event_id}`)
+    const substitute = eventParent.classList.contains('filled')
+    return { event_id, event_name, substitute }
+}
+const updateButtonText = () => {
+    const { substitute } = getEventFromForm()
+    if (substitute) {
+        formButtonTextEl.innerText = `Zapsat se jako NÁHRADNÍK`
+        formSignupButtonEl.classList.add('red')
+    } else {
+        formButtonTextEl.innerText = 'Zapsat se'
+        formSignupButtonEl.classList.remove('red')
     }
 }
 
@@ -209,6 +245,7 @@ eventListener.addEventListener('modified', ({detail: change}) => {
     const label = document.getElementById(`label-${change.doc.id}`)
     const radio = document.getElementById(`radio-${change.doc.id}`)
     setLabelValue(label, radio, change.doc)
+    updateButtonText()
     console.log('Modified event: ', change.doc.data());
 })
 eventListener.addEventListener('removed', ({detail: change}) => {
@@ -228,24 +265,7 @@ const signupForEvent = async (email, event_id, substitute) => {
     await batch.commit();
 }
 
-const signupForm = document.getElementById('signup-form')
-const getEventFromForm = () => {
-    const event_id = signupForm.elements.event.value
-    const event_name = document.querySelector(`#label-${event_id} > .event-name`).textContent
-    const eventParent = document.getElementById(`event-${event_id}`)
-    const substitute = eventParent.classList.contains('filled')
-    return { event_id, event_name, substitute }
-}
-signupForm.oninput = () => {
-    const { substitute } = getEventFromForm()
-    if (substitute) {
-        formButtonTextEl.innerText = `Zapsat se jako NÁHRADNÍK`
-        formSignupButtonEl.classList.add('red')
-    } else {
-        formButtonTextEl.innerText = 'Zapsat se'
-        formSignupButtonEl.classList.remove('red')
-    }
-}
+signupForm.oninput = updateButtonText
 signupForm.onsubmit = async (e) => {
     e.preventDefault()
     const { event_id, event_name, substitute } = getEventFromForm()
@@ -258,6 +278,7 @@ signupForm.onsubmit = async (e) => {
     try {
         formButtonLoaderEl.style.display = "inline-block"
         formButtonTextEl.style.display = "none"
+        signedUp = { id: event_id, substitute }
         await signupForEvent(email, event_id, substitute)
 
         const substituteMessage = substitute ? ' (jako NÁHRADNÍK)' : ''
@@ -265,6 +286,7 @@ signupForm.onsubmit = async (e) => {
         alreadySignedUpDisplayed = true
         disableOtherEvents(event_id)
     } catch (e) {
+        signedUp = {}
         console.error('Error signing up:', e)
         displayMessage('Nepodařilo se přihlásit!')
         formSignupButtonEl.disabled = false
