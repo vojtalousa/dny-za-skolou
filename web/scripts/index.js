@@ -33,12 +33,18 @@ const setDefaultAvailability = () => {
     formSignupButtonEl.disabled = false
 }
 
+let preventSubstituteIcon
 const alreadySignedUpCheck = (email) => {
     const participantData = allParticipants.find(participant => participant.email === email)
     if (participantData) {
         disableOtherEvents(participantData.event_id)
         if (!alreadySignedUpDisplayed) {
-            displayMessage('Už jste zapsaní!', '#3E7BF2', true)
+            const substituteMessage = participantData.substitute ? ' (jako NÁHRADNÍK)' : ''
+            if (!participantData.substitute) {
+                preventSubstituteIcon = participantData.event_id
+                document.getElementById(`event-${participantData.event_id}`).classList.remove('filled')
+            }
+            displayMessage(`Už jste zapsaní!${substituteMessage}`, '#3E7BF2', true)
             alreadySignedUpDisplayed = true
         }
     } else {
@@ -132,9 +138,8 @@ loginButtonLoaderEl.style.display = "none"
 loginButtonTextEl.style.display = "inline"
 
 const setLabelValue = (label, radio, doc) => {
-    const occupied = doc.data().participants.length
-    const capacity = doc.data().capacity
-    const teachers = doc.data().teachers
+    const { participants, substitutes, capacity, teachers } = doc.data()
+    const occupied = participants.length + substitutes.length
     const availability = `${occupied}/${capacity}`
     const hue = Math.max(126 - Math.round(126 * (occupied / capacity)), 0)
     const availabilityColor = `hsl(${hue}, 57%, 61%)`
@@ -145,7 +150,7 @@ const setLabelValue = (label, radio, doc) => {
 
     const full = occupied >= capacity
     const parent = radio.parentElement
-    if (full) parent.classList.add('filled')
+    if (full && preventSubstituteIcon !== doc.id) parent.classList.add('filled')
     else parent.classList.remove('filled')
 
     const disable = occupied >= capacity + 10
@@ -161,9 +166,12 @@ eventListener.addEventListener('change', () => {
     document.getElementById('form-loader').style.display = 'none'
 }, {once: true})
 eventListener.addEventListener('change', ({detail: snapshot}) => {
-    allParticipants = snapshot.docs.reduce((acc, doc) => acc.concat(doc.data().participants.map(email => {
-        return {email, event_id: doc.id}
-    })), [])
+    allParticipants = snapshot.docs.reduce((acc, doc) => {
+        const map = (substitute) => (email) => ({email, event_id: doc.id, substitute})
+        const participants = doc.data().participants.map(map(false))
+        const substitutes = doc.data().substitutes.map(map(true))
+        return acc.concat([...participants, ...substitutes])
+    }, [])
 
     const loggedIn = auth.currentUser?.email
     const hasLocalChanges = snapshot.docChanges().some(change => change.doc.metadata.hasPendingWrites)
@@ -252,7 +260,8 @@ signupForm.onsubmit = async (e) => {
         formButtonTextEl.style.display = "none"
         await signupForEvent(email, event_id, substitute)
 
-        displayMessage(`Zapsáno na "${event_name}"!`, '#43BC50', true)
+        const substituteMessage = substitute ? ' (jako NÁHRADNÍK)' : ''
+        displayMessage(`Zapsáno na "${event_name}"!${substituteMessage}`, '#43BC50', true)
         alreadySignedUpDisplayed = true
         disableOtherEvents(event_id)
     } catch (e) {

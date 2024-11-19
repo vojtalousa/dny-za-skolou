@@ -26,7 +26,7 @@ match /databases/{database}/documents {
             && existsAfter(/databases/$(database)/documents/users/$(request.auth.token.email))
     }
     function isInEvent(event_id) {
-        let event = getAfter(/databases/$(database)/documents/events/$(event_id))
+        let event = getAfter(/databases/$(database)/documents/events/$(event_id));
         return request.auth.token.email in event.data.participants || request.auth.token.email in event.data.substitutes
     }
 

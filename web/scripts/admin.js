@@ -39,7 +39,7 @@ const addFormHandler = (formId, action) => {
 
 const addEvent = async (name, teachers, capacity) => {
     const ref = firestore.collection(db, "events")
-    await firestore.addDoc(ref, {name, teachers, capacity, participants: []})
+    await firestore.addDoc(ref, {name, teachers, capacity, participants: [], substitutes: []})
     return "Akce byla úspěšně vytvořena!"
 }
 addFormHandler("new-event", async form => {
