@@ -96,11 +96,11 @@ const changeEventAttribute = async (doc, attribute, number = false) => handle(as
 let events = []
 const exportFileEl = document.getElementById('export-file-button')
 exportFileEl.addEventListener('click', () => handle(async () => {
-    const usersSnapshot = await firestore.getDocs(firestore.collection(db, 'users'))
-    const users = usersSnapshot.docs.map(x => x.data())
-    const data = users.map(({ email, event_id, substitute }) => {
-        const eventName = events.find(x => x.id === event_id).name
-        return [email, eventName, substitute]
+    const data = events.flatMap(event => {
+        const map = (substitute) => (email) => [email, event.name, substitute]
+        const participants = event.participants.map(map('0'))
+        const substitutes = event.substitutes.map(map('1'))
+        return [...participants, ...substitutes]
     })
     const csv = `email,akce,nahradnik\n${data.map(line => {
         return line.map(x => `"${x.toString().trim()}"`).join(',')
@@ -196,5 +196,5 @@ eventListener.addEventListener('removed', ({detail: change}) => {
     document.getElementById(`event-${change.doc.id}`).remove()
 })
 eventListener.addEventListener('change', ({detail: snapshot}) => {
-    events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    events = snapshot.docs.map(doc => doc.data())
 })

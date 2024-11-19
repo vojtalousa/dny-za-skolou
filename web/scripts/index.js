@@ -213,8 +213,10 @@ const signupForEvent = async (email, event_id, substitute) => {
     const userRef = firestore.doc(db, 'users', email)
     const eventRef = firestore.doc(db, 'events', event_id)
 
-    batch.set(userRef, {email, event_id, substitute})
-    batch.update(eventRef, {participants: firestore.arrayUnion(email)})
+    batch.set(userRef, {email, event_id})
+    const emailUpdate = firestore.arrayUnion(email)
+    const change = substitute ? {substitutes: emailUpdate} : {participants: emailUpdate}
+    batch.update(eventRef, change)
     await batch.commit();
 }
 

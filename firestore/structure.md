@@ -7,6 +7,7 @@
   - `name (string)`: zobrazovaný název akce
   - `teachers (string)`: seznam učitelů, kteří akci vedou (př.: Šteglová, Kellerová M.)
   - `participants (string[])`: list emailů uživatelů aktuálně přihlášených na akci
+  - `substitutes (string[])`: list emailů uživatelů přihlášených jako náhradníci
 
 **Collection:** `users`
 - ukládá informace o přihlášených uživatelích
@@ -14,7 +15,6 @@
 - **Fields:**
     - `email (string)`: email uživatele
     - `event_id (string)`: Document ID akce, na kterou je uživatel přihlášen
-    - `substitute (boolean)`: informace, pokud se uživatel přihlásil až po naplnění akce
 
 **Collection:** `settings`
 - ukládá sdílená nastavení aplikace

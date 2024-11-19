@@ -10,48 +10,45 @@ match /databases/{database}/documents {
     function isAdmin() {
     	return request.auth.token.email in get(/databases/$(database)/documents/settings/private).data.admins
     }
-    function signedUpCorrectly() {
-        let eventDocument = getAfter(/databases/$(database)/documents/events/$(request.resource.data.event_id));
-        let signedUp = request.auth.token.email in eventDocument.data.participants;
-        let substituteValid = request.resource.data.substitute == (eventDocument.data.participants.size() > eventDocument.data.capacity);
-        return signedUp && substituteValid
+    function signedUpCorrectly(destination, capacity) {
+        return isEmailValid()
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly([destination])
+            && request.resource.data[destination].size() == resource.data[destination].size() + 1
+            && (
+                resource.data[destination].size() == 0
+             || resource.data[destination] == request.resource.data[destination][0:resource.data[destination].size()]
+            )
+            && request.resource.data[destination][request.resource.data[destination].size() - 1] == request.auth.token.email
+            && request.resource.data[destination].size() <= capacity
+            && !(request.auth.token.email in resource.data[destination])
+            && request.time >= get(/databases/$(database)/documents/settings/public).data.start_time
+            && !exists(/databases/$(database)/documents/users/$(request.auth.token.email))
+            && existsAfter(/databases/$(database)/documents/users/$(request.auth.token.email))
+    }
+    function isInEvent(event_id) {
+        let event = getAfter(/databases/$(database)/documents/events/$(event_id))
+        return request.auth.token.email in event.data.participants || request.auth.token.email in event.data.substitutes
     }
 
   	match /users/{document} {
         allow read, delete: if (isEmailValid() && isAdmin())
     	allow read: if resource == null || request.auth.token.email == resource.data.email
-        allow delete: if (
-            isEmailValid()
-            && document == request.auth.token.email
-            && !(request.auth.token.email in getAfter(/databases/$(database)/documents/events/$(resource.data.event_id)).data.participants)
-        )
         allow create: if (
             isEmailValid()
             && document == request.auth.token.email
-        	&& request.resource.data.keys().hasOnly(['email', 'event_id', 'substitute'])
-            && request.resource.data.keys().hasAll(['email', 'event_id', 'substitute'])
+            && request.resource.data.keys().hasOnly(['email', 'event_id'])
+            && request.resource.data.keys().hasAll(['email', 'event_id'])
             && request.resource.data.email == request.auth.token.email
-            && signedUpCorrectly()
+            && isInEvent(request.resource.data.event_id)
         )
     }
   	match /events/{document} {
   	    allow read;
-        allow write: if (isEmailValid() && isAdmin())
-        allow update: if (
-            isEmailValid()
-        	&& request.resource.data.diff(resource.data).affectedKeys().hasOnly(['participants'])
-      		&& request.resource.data.participants.size() == resource.data.participants.size() + 1
-        	&& (
-          	    resource.data.participants.size() == 0
-                || resource.data.participants == request.resource.data.participants[0:resource.data.participants.size()]
-            )
-        	&& request.resource.data.participants[request.resource.data.participants.size() - 1] == request.auth.token.email
-        	&& request.resource.data.participants.size() <= resource.data.capacity + 10
-            && !(request.auth.token.email in resource.data.participants)
-            && request.time >= get(/databases/$(database)/documents/settings/public).data.start_time
-            && !exists(/databases/$(database)/documents/users/$(request.auth.token.email))
-        	&& existsAfter(/databases/$(database)/documents/users/$(request.auth.token.email))
+  	    allow update: if (
+            signedUpCorrectly('participants', resource.data.capacity)
+            || signedUpCorrectly('substitutes', 10)
         )
+        allow write: if (isEmailValid() && isAdmin())
   	}
     match /settings {
         match /public {
