@@ -71,7 +71,10 @@ addFormHandler("remove-participant", async form => {
 
         const eventId = userDoc.data().event_id
         const eventRef = firestore.doc(db, "events", eventId)
-        transaction.update(eventRef, {participants: firestore.arrayRemove(email)})
+        transaction.update(eventRef, {
+            participants: firestore.arrayRemove(email),
+            substitutes: firestore.arrayRemove(email)
+        })
         transaction.delete(userRef)
     })
     return "Účastník byl úspěšně odebrán!"
