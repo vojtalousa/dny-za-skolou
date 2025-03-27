@@ -5,7 +5,7 @@ import {signInWithPopup} from "https://www.gstatic.com/firebasejs/10.12.4/fireba
 const urlParams = new URLSearchParams(window.location.search);
 const overrideStartTime = Boolean(urlParams.get('force-start'))
 const settingsRef = firestore.doc(db, 'settings', 'public')
-const settingsDocPromise = overrideStartTime ? new Date(Date.now() - 1000) : firestore.getDoc(settingsRef)
+const settingsDocPromise = firestore.getDoc(settingsRef)
     .then(doc => doc.data())
     .catch(() => displayMessage('Chyba při načítání dat, obnovte prosím stránku!', '#E75858', true))
 
@@ -118,7 +118,7 @@ loginButtonEl.addEventListener('click', async () => {
         loginSectionEl.style.display = 'none'
         waitingSectionEl.style.display = 'flex'
 
-        const signupStart = (await settingsDocPromise).start_time.toDate()
+        const signupStart = overrideStartTime ? new Date(Date.now() - 1000) : (await settingsDocPromise).start_time.toDate()
 
         waitingLoaderEl.style.display = 'none'
         countdownEl.style.display = 'block'
