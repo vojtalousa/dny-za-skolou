@@ -5,8 +5,8 @@ import {signInWithPopup} from "https://www.gstatic.com/firebasejs/10.12.4/fireba
 const urlParams = new URLSearchParams(window.location.search);
 const overrideStartTime = Boolean(urlParams.get('force-start'))
 const settingsRef = firestore.doc(db, 'settings', 'public')
-const signupStartPromise = overrideStartTime ? new Date(Date.now() - 1000) : firestore.getDoc(settingsRef)
-    .then(doc => doc.data().start_time.toDate())
+const settingsDocPromise = overrideStartTime ? new Date(Date.now() - 1000) : firestore.getDoc(settingsRef)
+    .then(doc => doc.data())
     .catch(() => displayMessage('Chyba při načítání dat, obnovte prosím stránku!', '#E75858', true))
 
 const loginSectionEl = document.getElementById('login-section')
@@ -118,7 +118,7 @@ loginButtonEl.addEventListener('click', async () => {
         loginSectionEl.style.display = 'none'
         waitingSectionEl.style.display = 'flex'
 
-        const signupStart = await signupStartPromise
+        const signupStart = (await settingsDocPromise).start_time.toDate()
 
         waitingLoaderEl.style.display = 'none'
         countdownEl.style.display = 'block'
@@ -141,7 +141,7 @@ loginButtonEl.addEventListener('click', async () => {
 loginButtonLoaderEl.style.display = "none"
 loginButtonTextEl.style.display = "inline"
 
-const setLabelValue = (label, radio, doc) => {
+const setLabelValue = async (label, radio, doc) => {
     const { participants, substitutes, capacity, teachers } = doc.data()
     const occupied = participants.length + substitutes.length
     const availability = `${occupied}/${capacity}`
@@ -153,7 +153,8 @@ const setLabelValue = (label, radio, doc) => {
     label.querySelector('.event-teachers').textContent = teachers
 
     const full = occupied >= capacity
-    const disable = occupied >= capacity + 10
+    const substitutesMax = (await settingsDocPromise).substitutes
+    const disable = occupied >= capacity + substitutesMax
     const parent = radio.parentElement
 
     if (signedUp.id === doc.id) {
@@ -213,7 +214,7 @@ eventListener.addEventListener('change', ({detail: snapshot}) => {
     const hasLocalChanges = snapshot.docChanges().some(change => change.doc.metadata.hasPendingWrites)
     if (formSectionVisible && loggedIn && !hasLocalChanges) alreadySignedUpCheck(auth.currentUser.email)
 })
-eventListener.addEventListener('added', ({detail: change}) => {
+eventListener.addEventListener('added', async ({detail: change}) => {
     const radio = document.createElement('input')
     radio.type = 'radio'
     radio.name = 'event'
@@ -238,13 +239,13 @@ eventListener.addEventListener('added', ({detail: change}) => {
     div.append(radio, label)
 
     formEventsGroupEl.append(div)
-    setLabelValue(label, radio, change.doc)
+    await setLabelValue(label, radio, change.doc)
     console.log('Added event: ', change.doc.data());
 })
-eventListener.addEventListener('modified', ({detail: change}) => {
+eventListener.addEventListener('modified', async ({detail: change}) => {
     const label = document.getElementById(`label-${change.doc.id}`)
     const radio = document.getElementById(`radio-${change.doc.id}`)
-    setLabelValue(label, radio, change.doc)
+    await setLabelValue(label, radio, change.doc)
     updateButtonText()
     console.log('Modified event: ', change.doc.data());
 })

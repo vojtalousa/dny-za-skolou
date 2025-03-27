@@ -26,3 +26,4 @@
   - `public` - obsahuje informace dostupné všem uživatelům
     - **Fields:**
         - `start_time (timestamp)`: čas, kdy bude povoleno přihlašování na akce
+        - `substitutes (number)`: maximální počet náhradníků na každé akci

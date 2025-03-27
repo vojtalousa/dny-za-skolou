@@ -50,10 +50,17 @@ addFormHandler("new-event", async form => {
 })
 addFormHandler("set-time", async form => {
     const ref = firestore.doc(db, "settings", "public")
-    await firestore.setDoc(ref, {
+    await firestore.updateDoc(ref, {
         start_time: new Date(form.elements.time.value)
     })
     return "Čas byl úspěšně nastaven!"
+})
+addFormHandler("set-substitutes", async form => {
+    const ref = firestore.doc(db, "settings", "public")
+    await firestore.updateDoc(ref, {
+        substitutes: parseInt(form.elements.substitutes.value, 10)
+    })
+    return "Maximální počet náhradníků byl úspěšně nastaven!"
 })
 addFormHandler("remove-participant", async form => {
     const email = form.elements.email.value

@@ -10,7 +10,8 @@ match /databases/{database}/documents {
     function isAdmin() {
     	return request.auth.token.email in get(/databases/$(database)/documents/settings/private).data.admins
     }
-    function signedUpCorrectly(destination, capacity) {
+    function signedUpCorrectly(destination) {
+        let settings = get(/databases/$(database)/documents/settings/public);
         return isEmailValid()
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly([destination])
             && request.resource.data[destination].size() == resource.data[destination].size() + 1
@@ -19,9 +20,9 @@ match /databases/{database}/documents {
              || resource.data[destination] == request.resource.data[destination][0:resource.data[destination].size()]
             )
             && request.resource.data[destination][request.resource.data[destination].size() - 1] == request.auth.token.email
-            && request.resource.data[destination].size() <= capacity
+            && request.resource.data[destination].size() <= ((destination == 'participants') ? resource.data.capacity : settings.data.substitutes)
             && !(request.auth.token.email in resource.data[destination])
-            && request.time >= get(/databases/$(database)/documents/settings/public).data.start_time
+            && request.time >= settings.data.start_time
             && !exists(/databases/$(database)/documents/users/$(request.auth.token.email))
             && existsAfter(/databases/$(database)/documents/users/$(request.auth.token.email))
     }
@@ -45,8 +46,8 @@ match /databases/{database}/documents {
   	match /events/{document} {
   	    allow read;
   	    allow update: if (
-            signedUpCorrectly('participants', resource.data.capacity)
-            || signedUpCorrectly('substitutes', 10)
+            signedUpCorrectly('participants')
+            || signedUpCorrectly('substitutes')
         )
         allow write: if (isEmailValid() && isAdmin())
   	}
